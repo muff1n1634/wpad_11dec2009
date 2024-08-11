@@ -1,0 +1,1 @@
+These stdlib headers are not complete; they contain only the declarations that the WPAD library requires to build. You should configure your project's build system so that it points to your project's stdlib headers instead.
