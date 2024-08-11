@@ -9,6 +9,8 @@
 
 #include "context_bte.h"
 
+// TODO: write notes on exclusion of include directive from main WPAD header
+
 /*******************************************************************************
  * macros
  */

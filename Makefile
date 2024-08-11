@@ -15,11 +15,11 @@ vpath %.o build
 
 export MWCIncludes := include:include/stdlib
 
-ifneq ($(strip ${DEBUG}),0)
+ifeq ($(strip ${DEBUG}),0)
 	FLAGS = -O4,p -ipa file -DNDEBUG
 	LIBSUFFIX =
 else
-	FLAGS = -opt off -inline off -g
+	FLAGS = -opt off -inline off -gdwarf-${DEBUG}
 	LIBSUFFIX = D
 endif
 
@@ -35,5 +35,5 @@ ${WPAD_LIB}: WPAD.o WPADHIDParser.o WPADMem.o WPADEncrypt.o lint.o WUD.o WUDHidH
 
 %.o: %.c
 	@[ -d build ] || mkdir build
-	${WINE} ${MWERKS} -proc gekko -fp hardware -lang c99 -cwd include ${FLAGS} -o build/$@ -c $<
+	${WINE} ${MWERKS} -proc gekko -fp hardware -lang c99 -cwd include -cpp_exceptions off ${FLAGS} -o build/$@ -c $<
 

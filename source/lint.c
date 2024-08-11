@@ -161,6 +161,7 @@ void LINTSub(ULONG *dst, const ULONG *lhs, const ULONG *rhs)
 	*dst = i + 1;
 }
 
+// TODO on release
 void LINTMul(ULONG *dst, const ULONG *lhs, const ULONG *rhs)
 {
 	int i, j;

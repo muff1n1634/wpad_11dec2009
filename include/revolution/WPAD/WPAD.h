@@ -219,6 +219,8 @@ enum WPADExtButton_et
 	WPAD_BUTTON_FS_Z		= (1 << 13),
 	WPAD_BUTTON_FS_C		= (1 << 14),
 
+	WPAD_BUTTON_FS_ALL		= 0x6000,
+
 	// Classic Controller
 //  >vL-H+R. lBYAXr<^
 	WPAD_BUTTON_CL_UP		= (1 <<  0),
@@ -237,6 +239,8 @@ enum WPADExtButton_et
 	WPAD_BUTTON_CL_FULL_L	= (1 << 13),
 	WPAD_BUTTON_CL_DOWN		= (1 << 14),
 	WPAD_BUTTON_CL_RIGHT	= (1 << 15),
+
+	WPAD_BUTTON_CL_ALL		= 0xfeff,
 
 	// Shinkansen train controller
 	// shares the same format as the Classic Controller
@@ -257,6 +261,8 @@ enum WPADExtButton_et
 	WPAD_BUTTON_TR_FULL_L	= WPAD_BUTTON_CL_FULL_L,
 	WPAD_BUTTON_TR_DOWN		= WPAD_BUTTON_CL_DOWN,
 	WPAD_BUTTON_TR_RIGHT	= WPAD_BUTTON_CL_RIGHT,
+
+	WPAD_BUTTON_TR_ALL		= WPAD_BUTTON_CL_ALL,
 };
 
 // WPADControlMotor

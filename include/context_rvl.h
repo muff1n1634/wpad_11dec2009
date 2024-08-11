@@ -38,6 +38,8 @@ enum OSAppType_et
 	OS_APP_TYPE_CHANNEL		= 0x81,
 };
 
+extern BOOL __OSInIPL;
+
 void OSRegisterVersion(const char *version);
 const char *OSGetAppGamename(void);
 OSAppType OSGetAppType(void);
@@ -104,6 +106,8 @@ struct OSContext
 
 void OSSwitchFiberEx(register_t arg0, register_t arg1, register_t arg2,
                      register_t arg3, OSFiber *func, void *stack);
+
+u32 OSCalcCRC32(const void *data, u32 length);
 
 __attribute__((weak)) void OSReport(const char *msg, ...);
 __attribute__((weak)) void OSPanic(const char *file, int line,
@@ -274,7 +278,6 @@ inline void ACRWriteReg(u32 reg, u32 val)
 {
 	__IPCRegs[reg >> 2] = val;
 }
-
 
 // SC
 

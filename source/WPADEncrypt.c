@@ -919,7 +919,7 @@ void WPADiCreateKey(WPADChannel chan)
 		p_wpd->encryptionKey[i] = key1[5 - i];
 
 	for (i = 0; i < (int)ARRAY_LENGTH(key2); i++)
-		p_wpd->encryptionKey[ARRAY_LENGTH(key1) + i] = key2[9 - i];
+		p_wpd->encryptionKey[(int)ARRAY_LENGTH(key1) + i] = key2[9 - i];
 	// clang-format on
 
 	memcpy(p_wpd->decryptAddTable, addTable, sizeof p_wpd->decryptAddTable);
@@ -978,6 +978,7 @@ void WPADiCreateKeyFor3rd(WPADChannel chan)
 	// NOTE: switch from key2 to key1 for these last two
 	xorTable[6] = tb3[key1[3] + ((numRand + 1) << 8)] ^ tb3[key1[5] + ((numRand + 2) << 8)];
 	xorTable[7] = tb3[key1[2] + ((numRand + 1) << 8)] ^ tb3[key1[6] + ((numRand + 2) << 8)];
+	// clang-format on
 
 	for (i = 0; i < (int)ARRAY_LENGTH(key1); i++)
 		p_wpd->encryptionKey[i] = key1[5 - i];
@@ -987,7 +988,6 @@ void WPADiCreateKeyFor3rd(WPADChannel chan)
 
 	memcpy(p_wpd->decryptAddTable, addTable, sizeof p_wpd->decryptAddTable);
 	memcpy(p_wpd->decryptXorTable, xorTable, sizeof p_wpd->decryptXorTable);
-	// clang-format on
 
 	OSRestoreInterrupts(intrStatus);
 }
@@ -1000,7 +1000,8 @@ void WPADiDecode(WPADChannel chan, byte_t *data, u16 length, u16 startIndex)
 	u8 tableIndex;
 
 	u16 i;
-	if (WPAD_EXTENSION_DATA_IS_ENCRYPTED(p_wpd->extState))
+	if (p_wpd->extState == WPAD_STATE_EXT_ENCRYPTED
+	    || p_wpd->extState == WPAD_STATE_EXT_ENCRYPTED_3RD)
 	{
 		buffer = data;
 
