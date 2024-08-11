@@ -7,7 +7,7 @@
 
 #include <types.h>
 
-#include "context.h"
+#include "context_bte.h"
 
 /*******************************************************************************
  * macros
@@ -68,7 +68,7 @@ typedef struct WUDDevInfo WUDDevInfo;
 typedef void WUDHidConnectCallback(WUDDevInfo *devInfo, u8 isOpenEvent);
 typedef void WUDHidReceiveCallback(UINT8 dev_handle, byte_t *p_rpt, UINT16 len);
 
-typedef struct WUDDevInfo
+struct WUDDevInfo
 {
 	struct small_dev_info	small;		// size 0x40, offset 0x00
 	BD_ADDR					devAddr;	// size 0x06, offset 0x40
@@ -82,7 +82,7 @@ typedef struct WUDDevInfo
 	u8						at_0x5c;	// size 0x01, offset 0x5c
 	byte_t					unk_0x5d[1]; // padding?
 	tBTA_HH_ATTR_MASK		hhAttrMask;	// size 0x02, offset 0x5e
-} WUDDevInfo; // size 0x60
+}; // size 0x60
 
 /*******************************************************************************
  * functions

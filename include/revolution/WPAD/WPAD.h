@@ -14,7 +14,7 @@
 #include <revolution/SC/scsystem.h>
 #endif
 
-#include "context.h"
+#include "context_rvl.h"
 
 /*******************************************************************************
  * macros

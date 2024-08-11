@@ -191,7 +191,9 @@ static u16 _wpad_hyst_count_threshold[WPAD_MAX_NZFILTERS] = {30, 30, 30, 30};
 static OSAppType _wpadGameType;
 static const char *_wpadGameCode;
 
+#if !defined(NDEBUG)
 static u8 _wpadDummyAttach[WPAD_MAX_CONTROLLERS];
+#endif // !defined(NDEBUG)
 
 static u8 _wpadSleepTime;
 static u8 _wpadDpdSense;
@@ -1079,8 +1081,8 @@ static void __wpadCalcAfh(void)
 	if (_wpadAfhCnt != 60000)
 		return;
 
-#define CURRENT_AFH_CHANNEL_ADDR (void *)0x800031a2
-	u8 *currAfhChannel = OSPhysicalToCached(CURRENT_AFH_CHANNEL_ADDR);
+#define CURRENT_AFH_CHANNEL_PHYS_ADDR	(void *)0x31a2
+	u8 *currAfhChannel = OSPhysicalToCached(CURRENT_AFH_CHANNEL_PHYS_ADDR);
 	DCInvalidateRange(currAfhChannel, sizeof *currAfhChannel);
 
 	if (_wpadAfhChannel == *currAfhChannel)
@@ -1313,7 +1315,9 @@ static void __wpadClearControlBlock(WPADChannel chan)
 	_wpadExtCnt[chan] = 0;
 	_wpadRumbleCnt[chan] = 0;
 
+#if !defined(NDEBUG)
 	_wpadDummyAttach[chan] = FALSE;
+#endif // !defined(NDEBUG)
 }
 
 #pragma push
@@ -1755,7 +1759,7 @@ static void __wpadReceiveCallback(UINT8 dev_handle, UINT8 *p_rpt,
 
 	UINT8 port = _wpadHandle2PortTable[dev_handle];
 
-	if (port < WPAD_MAX_CONTROLLERS)
+	if (port < (u32)WPAD_MAX_CONTROLLERS)
 		result = WPADiHIDParser(port, p_rpt);
 
 	(void)result; // NOTE: do not remove
@@ -2265,7 +2269,7 @@ void WPADSetAutoSamplingBuf(WPADChannel chan, void *buf, u32 length)
 
 	BOOL intrStatus = OSDisableInterrupts();
 
-	s8 defaultErr = p_wpd->status == WPAD_ENODEV ? WPAD_ENODEV : WPAD_EINVAL;
+	s8 defaultErr = p_wpd->status == WPAD_ENODEV ? WPAD_CENODEV : WPAD_CEINVAL;
 	u32 fmtSize = __wpadFmt2Size(p_wpd->dataFormat);
 
 	int i;
@@ -2627,7 +2631,7 @@ WPADResult WPADSendStreamData(WPADChannel chan, void *p_buf, u16 len)
 	if (status == WPAD_ENODEV)
 		return WPAD_ENODEV;
 
-	if (handshakeFinished)
+	if (!handshakeFinished)
 		return WPAD_ECOMM;
 
 	if (__wpadIsBusyStream(chan))
@@ -3735,10 +3739,12 @@ void WPADRecalibrate(WPADChannel chan)
 	OSRestoreInterrupts(intrStatus);
 }
 
+#if !defined(NDEBUG)
 BOOL WPADiIsDummyExtension(WPADChannel chan)
 {
 	return _wpadDummyAttach[chan];
 }
+#endif // !defined(NDEBUG)
 
 BOOL WPADIsUsedCallbackByKPAD(void)
 {

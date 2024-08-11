@@ -43,10 +43,10 @@ const char *OSGetAppGamename(void);
 OSAppType OSGetAppType(void);
 
 #if defined(NDEBUG)
-# define OSPhysicalToCached(addr)	(void *)((xu32)addr + 0x80000000)
-# define OSPhysicalToUncached(addr)	(void *)((xu32)addr + 0xC0000000)
-# define OSCachedToPhysical(addr)	(void *)((xu32)addr - 0x80000000)
-# define OSUncachedToPhysical(addr)	(void *)((xu32)addr - 0xC0000000)
+# define OSPhysicalToCached(addr)	(void *)((u32)addr + 0x80000000)
+# define OSPhysicalToUncached(addr)	(void *)((u32)addr + 0xC0000000)
+# define OSCachedToPhysical(addr)	(void *)((u32)addr - 0x80000000)
+# define OSUncachedToPhysical(addr)	(void *)((u32)addr - 0xC0000000)
 #endif // defined(NDEBUG)
 
 void *(OSPhysicalToCached)(void *addr);
@@ -205,7 +205,7 @@ typedef struct OSMutexQueue
 } OSMutexQueue; // size 0x08
 
 // [SPQE7T]/ISpyD.elf:.debug_info::0x2feb
-typedef struct OSThread
+struct OSThread
 {
 	OSContext		context;		// size 0x2c8, offset 0x000
 	u16				state;			// size 0x002, offset 0x2c8
@@ -224,7 +224,7 @@ typedef struct OSThread
 	u32				*stackEnd;		// size 0x004, offset 0x308
 	s32				error;			// size 0x004, offset 0x30c
 	void			*specific[2];	// size 0x008, offset 0x310
-} OSThread; // size 0x318
+}; // size 0x318
 
 void OSInitThreadQueue(OSThreadQueue *queue);
 
