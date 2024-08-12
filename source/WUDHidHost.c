@@ -160,7 +160,8 @@ void WUDiHidHostEventCallback(tBTA_HH_EVT event, tBTA_HH *p_data)
 
 		p_wcb->connectedNum--;
 
-		OSAssert_Line(305, p_cb->handle >= 0 && p_cb->handle < WUD_MAX_DEV_ENTRY);
+		OSAssert_Line(305, p_cb->handle >= 0
+		                   && p_cb->handle < WUD_MAX_DEV_ENTRY);
 
 		p_info = WUDiGetDevInfo(WUDiGetDevAddrForHandle(p_cb->handle));
 		if (p_info)
@@ -197,7 +198,7 @@ void WUDiHidHostEventCallback(tBTA_HH_EVT event, tBTA_HH *p_data)
 		p_conn = &p_data->dev_info;
 		break;
 
-	case 15: // BTA_HH_API_ERR_EVT?
+	case 15: // BTA_HH_API_ERR_EVT???
 		p_hh_e15 = (struct hh_event_15_data *)p_data;
 
 		p_wcb->bufferStatus0 = p_hh_e15->at_0x00;
@@ -249,10 +250,12 @@ extern void bta_hh_co_close(UINT8 dev_handle __attribute__((unused)),
 	return;
 }
 
-extern BOOLEAN
-bta_dm_co_get_compress_memory(tBTA_SYS_ID id __attribute__((unused)),
-                              UINT8 **memory_p __attribute__((unused)),
-                              UINT32 *memory_size __attribute__((unused)))
+extern BOOLEAN bta_dm_co_get_compress_memory(tBTA_SYS_ID id
+                                             __attribute__((unused)),
+                                             UINT8 **memory_p
+                                             __attribute__((unused)),
+                                             UINT32 *memory_size
+                                             __attribute__((unused)))
 {
 	BOOLEAN ret = FALSE;
 
