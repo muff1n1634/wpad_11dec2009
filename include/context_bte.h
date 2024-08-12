@@ -42,7 +42,6 @@ typedef UINT8 *DEV_CLASS_PTR;               /* Pointer to Device class */
  *
  * UPDATE: there is a case where it is 248
  */
-
 #define BD_NAME_LEN     248
 typedef UINT8 BD_NAME[BD_NAME_LEN];         /* Device name */
 typedef UINT8 *BD_NAME_PTR;                 /* Pointer to Device name */

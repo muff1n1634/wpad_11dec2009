@@ -20,8 +20,8 @@
  * macros
  */
 
-#define WM_MEM_ADDR(addr_)				((((addr_) & 0xffff) | (                      0  << 16)) & ~(1 << 26))
-#define WM_EXT_REG_ADDR(type_, addr_)	( ((addr_) & 0xffff) | ((WPAD_EXT_REG_ ## type_) << 16)  |  (1 << 26))
+#define WM_MEM_ADDR(addr_)				 ((addr_) & 0xffff)
+#define WM_EXT_REG_ADDR(type_, addr_)	(((addr_) & 0xffff) | ((WPAD_EXT_REG_ ## type_) << 16) | (1 << 26))
 
 /*******************************************************************************
  * types

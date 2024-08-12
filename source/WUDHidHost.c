@@ -8,7 +8,9 @@
 
 #include "WUD.h"
 
+#if 0
 #include <revolution/OS/OSAssert.h>
+#endif
 
 #include "context.h"
 
@@ -194,6 +196,7 @@ void WUDiHidHostEventCallback(tBTA_HH_EVT event, tBTA_HH *p_data)
 	case BTA_HH_RMV_DEV_EVT:
 		p_conn = &p_data->dev_info;
 		break;
+
 	case 15: // BTA_HH_API_ERR_EVT?
 		p_hh_e15 = (struct hh_event_15_data *)p_data;
 

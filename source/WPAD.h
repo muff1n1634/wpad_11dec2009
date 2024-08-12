@@ -23,7 +23,7 @@
  */
 
 // WPADStatusEx is the largest WPADStatus variant (size 0x5a)
-// 0x20 is an arbitrary power
+// 0x20 is an arbitrary power of 2 that rounds up to 0x60
 #define RX_BUFFER_SIZE					ROUND_UP(sizeof(WPADStatusEx), 0x20)
 
 #define WPAD_CONFIG_BLOCK_CHECKSUM_BIAS	0x55
@@ -46,13 +46,13 @@
  */
 
 // https://wiibrew.org/wiki/Wiimote#EEPROM_Memory
-#define WM_ADDR_MEM_DEV_CONFIG_0		0x0000
-#define WM_ADDR_MEM_GAME_INFO_0			0x002a
-#define WM_ADDR_MEM_GAME_INFO_1			0x0062
+#define WM_ADDR_MEM_DEV_CONFIG_0		WM_MEM_ADDR(0x0000)
+#define WM_ADDR_MEM_GAME_INFO_0			WM_MEM_ADDR(0x002a)
+#define WM_ADDR_MEM_GAME_INFO_1			WM_MEM_ADDR(0x0062)
 
 // out of range??? wiibrew says the wiimote only has 0x1600 bytes of memory
-#define WM_ADDR_MEM_176C				0x176c
-#define WM_ADDR_MEM_1770				0x1770
+#define WM_ADDR_MEM_176C				WM_MEM_ADDR(0x176c)
+#define WM_ADDR_MEM_1770				WM_MEM_ADDR(0x1770)
 
 /*
  * Wiimote extension register addresses

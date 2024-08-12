@@ -21,17 +21,19 @@
 #define ROUND_DOWN(x, align)		((x) & -(align))
 #define ROUND_DOWN_PTR(x, align)	(void *)(((xu32)(x)) & -(align))
 
-#define ARRAY_LENGTH(x)			(sizeof (x) / sizeof ((x)[0]))
+#define IS_ALIGNED(x,align)			(((u32)(x) & ((align) - 1)) == 0)
+
+#define ARRAY_LENGTH(x)				(sizeof (x) / sizeof ((x)[0]))
 
 #if !defined(NDEBUG)
-# define RVLB_INFIX_			DEBUG
-# define RVLB_STRING_			"debug"
+# define RVLB_INFIX_				DEBUG
+# define RVLB_STRING_				"debug"
 #else
-# define RVLB_INFIX_			RELEASE
-# define RVLB_STRING_			"release"
+# define RVLB_INFIX_				RELEASE
+# define RVLB_STRING_				"release"
 #endif
 
-#define CW_VERSION				STR(__CWCC__) "_" STR(__CWBUILD__)
+#define CW_VERSION					STR(__CWCC__) "_" STR(__CWBUILD__)
 
 #define REVOLUTION_LIB_VERSION_STRING(main_lib_, lib_, build_type_, date_, time_)	\
 	"<< " main_lib_ " - " lib_ " \t" build_type_ " build: " date_ " " time_ " (" CW_VERSION ") >>"

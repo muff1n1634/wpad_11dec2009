@@ -8,7 +8,6 @@
 #include <math.h>
 #include <string.h>
 
-#include <macros.h>
 #include <types.h>
 
 #include "WPAD.h"

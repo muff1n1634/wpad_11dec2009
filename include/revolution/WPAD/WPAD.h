@@ -90,7 +90,6 @@ enum WPADChannel_et
 	WPAD_CHAN3,				/* name known from asserts */
 
 	WPAD_MAX_CONTROLLERS,	/* name known from asserts */
-
 	WPAD_CHAN_INVALID		= -1,
 };
 

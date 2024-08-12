@@ -9,8 +9,6 @@
 
 #include "context_bte.h"
 
-// TODO: write notes on exclusion of include directive from main WPAD header
-
 /*******************************************************************************
  * macros
  */
@@ -29,7 +27,7 @@
 #endif
 
 typedef s8 WUDDevHandle;
-#define WUD_DEV_HANDLE_INVALID	(-1)
+#define WUD_DEV_HANDLE_INVALID		(-1)
 
 typedef s32 WUDChannel;
 enum WUDChannel_et
@@ -68,7 +66,7 @@ typedef void WUDClearDeviceCallback(signed);
 
 typedef struct WUDDevInfo WUDDevInfo;
 typedef void WUDHidConnectCallback(WUDDevInfo *devInfo, u8 isOpenEvent);
-typedef void WUDHidReceiveCallback(UINT8 dev_handle, byte_t *p_rpt, UINT16 len);
+typedef void WUDHidReceiveCallback(UINT8 dev_handle, UINT8 *p_rpt, UINT16 len);
 
 struct WUDDevInfo
 {

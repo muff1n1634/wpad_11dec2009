@@ -13,24 +13,23 @@
 #include <types.h>
 
 #if 0
-#include <revolution/OS/OSAlarm.h> // OSAlarm
+#include <revolution/OS/OSAlarm.h>
 #endif
 
-#include "context.h" // bte
+#include "context.h"
 
 /*******************************************************************************
  * macros
  */
 
-#define WUD_BDCMP(lhs_, rhs_)					memcmp(lhs_, rhs_, BD_ADDR_LEN)
-#define WUD_BDCPY(dst_, src_)					memcpy(dst_, src_, BD_ADDR_LEN)
+#define WUD_BDCMP(lhs_, rhs_)				memcmp(lhs_, rhs_, BD_ADDR_LEN)
+#define WUD_BDCPY(dst_, src_)				memcpy(dst_, src_, BD_ADDR_LEN)
 
-#define WUD_DEV_NAME_IS(devName_, str_)			(memcmp(devName_, str_, sizeof str_ - 1) == 0)
+#define WUD_DEV_NAME_IS(devName_, str_)		(memcmp(devName_, str_, sizeof (str_) - 1) == 0)
 
-#define WUD_DEV_NAME_IS_CNT(devName_)			WUD_DEV_NAME_IS(devName_, "Nintendo RVL-CNT")
-#define WUD_DEV_NAME_IS_CNT_01(devName_)		WUD_DEV_NAME_IS(devName_, "Nintendo RVL-CNT-01")
-#define WUD_DEV_NAME_IS_WBC(devName_)			WUD_DEV_NAME_IS(devName_, "Nintendo RVL-WBC")
-
+#define WUD_DEV_NAME_IS_CNT(devName_)		WUD_DEV_NAME_IS(devName_, "Nintendo RVL-CNT")
+#define WUD_DEV_NAME_IS_CNT_01(devName_)	WUD_DEV_NAME_IS(devName_, "Nintendo RVL-CNT-01")
+#define WUD_DEV_NAME_IS_WBC(devName_)		WUD_DEV_NAME_IS(devName_, "Nintendo RVL-WBC")
 
 /*******************************************************************************
  * types
@@ -152,67 +151,67 @@ struct WUDDevInfoList
 
 typedef struct /* possibly untagged, like kpad */
 {
-	WUDSyncDeviceCallback	*syncStdCB;				// size 0x004, offset 0x000
-	WUDSyncDeviceCallback	*syncSmpCB;				// size 0x004, offset 0x004
-	WUDClearDeviceCallback	*clearDevCB;			// size 0x004, offset 0x008
+	WUDSyncDeviceCallback	*syncStdCB;							// size 0x004, offset 0x000
+	WUDSyncDeviceCallback	*syncSmpCB;							// size 0x004, offset 0x004
+	WUDClearDeviceCallback	*clearDevCB;						// size 0x004, offset 0x008
 
-	WUDSyncState			syncState;				// size 0x001, offset 0x00c
-	WUDDeleteState			deleteState;			// size 0x001, offset 0x00d
-	WUDLinkKeyState			linkKeyState;			// size 0x001, offset 0x00e
-	WUDStackState			stackState;				// size 0x001, offset 0x00f
-	WUDInitState			initState;				// size 0x001, offset 0x010
-	WUDShutdownState		shutdownState;			// size 0x001, offset 0x011
+	WUDSyncState			syncState;							// size 0x001, offset 0x00c
+	WUDDeleteState			deleteState;						// size 0x001, offset 0x00d
+	WUDLinkKeyState			linkKeyState;						// size 0x001, offset 0x00e
+	WUDStackState			stackState;							// size 0x001, offset 0x00f
+	WUDInitState			initState;							// size 0x001, offset 0x010
+	WUDShutdownState		shutdownState;						// size 0x001, offset 0x011
 
-	u8						devNums;				// size 0x001, offset 0x012 /* name known from asserts */
-	u8						devSmpNums;				// size 0x001, offset 0x013 /* name known from asserts */
+	u8						devNums;							// size 0x001, offset 0x012 /* name known from asserts */
+	u8						devSmpNums;							// size 0x001, offset 0x013 /* name known from asserts */
 
-	struct WUDDevInfoList	*smpListHead;			// size 0x004, offset 0x014
-	struct WUDDevInfoList	*smpListTail;			// size 0x004, offset 0x018
+	struct WUDDevInfoList	*smpListHead;						// size 0x004, offset 0x014
+	struct WUDDevInfoList	*smpListTail;						// size 0x004, offset 0x018
 	struct WUDDevInfoList	smpList[WUD_MAX_DEV_ENTRY_FOR_SMP];	// size 0x048, offset 0x01c
 
-	struct WUDDevInfoList	*stdListHead;			// size 0x004, offset 0x064
-	struct WUDDevInfoList	*stdListTail;			// size 0x004, offset 0x068
+	struct WUDDevInfoList	*stdListHead;						// size 0x004, offset 0x064
+	struct WUDDevInfoList	*stdListTail;						// size 0x004, offset 0x068
 	struct WUDDevInfoList	stdList[WUD_MAX_DEV_ENTRY_FOR_STD];	// size 0x048, offset 0x06c
 
 	WUDDevInfo				stdDevs[WUD_MAX_DEV_ENTRY_FOR_STD];	// size 0x3c0, offset 0x0e4
 	WUDDevInfo				smpDevs[WUD_MAX_DEV_ENTRY_FOR_SMP];	// size 0x240, offset 0x4a4
 
-	u8						connectedNum;			// size 0x001, offset 0x6e4
-	u8						linkedNum;				// size 0x001, offset 0x6e5
-	u8						syncedNum;				// size 0x001, offset 0x6e6
+	u8						connectedNum;						// size 0x001, offset 0x6e4
+	u8						linkedNum;							// size 0x001, offset 0x6e5
+	u8						syncedNum;							// size 0x001, offset 0x6e6
 
-	u8						syncSkipChecks;			// size 0x001, offset 0x6e7	// maybe? it also adds some checks though?
-	s8						syncLoopNum;			// size 0x001, offset 0x6e8	// implied by usage (see __wudSyncPrepareSearch) and location of stripped symbol WUDSetSyncLoopNum near other members
-	WUDSyncType				syncType;				// size 0x001, offset 0x6e9
+	u8						syncSkipChecks;						// size 0x001, offset 0x6e7	// maybe? it also adds some checks though???
+	s8						syncLoopNum;						// size 0x001, offset 0x6e8	// implied by usage (see __wudSyncPrepareSearch) and location of stripped symbol WUDSetSyncLoopNum near other members
+	WUDSyncType				syncType;							// size 0x001, offset 0x6e9
 
-	u8						connectable;			// size 0x001, offset 0x6ea
-	u8						discoverable;			// size 0x001, offset 0x6eb	// implied by usage and WUDGetDiscoverable being right before WUDGetConnectable
+	u8						connectable;						// size 0x001, offset 0x6ea
+	u8						discoverable;						// size 0x001, offset 0x6eb	// implied by usage and WUDGetDiscoverable being right before WUDGetConnectable
 
-	WUDHidReceiveCallback	*hidRecvCB;				// size 0x004, offset 0x6ec
-	WUDHidConnectCallback	*hidConnCB;				// size 0x004, offset 0x6f0
+	WUDHidReceiveCallback	*hidRecvCB;							// size 0x004, offset 0x6ec
+	WUDHidConnectCallback	*hidConnCB;							// size 0x004, offset 0x6f0
 
-	WUDAllocFunc			*allocFunc;				// size 0x004, offset 0x6f4
-	WUDFreeFunc				*freeFunc;				// size 0x004, offset 0x6f8
+	WUDAllocFunc			*allocFunc;							// size 0x004, offset 0x6f4
+	WUDFreeFunc				*freeFunc;							// size 0x004, offset 0x6f8
 
-	BD_ADDR					pairAddr;				// size 0x006, offset 0x6fc
-	BD_ADDR					hostAddr;				// size 0x006, offset 0x702	// name comes from stripped symbol _WUDGetHostAddr
+	BD_ADDR					pairAddr;							// size 0x006, offset 0x6fc
+	BD_ADDR					hostAddr;							// size 0x006, offset 0x702	// name comes from stripped symbol _WUDGetHostAddr
 
-	s8						libStatus;				// size 0x001, offset 0x708
+	s8						libStatus;							// size 0x001, offset 0x708
 
-	char unsigned			unk_0x709;				// size 0x001, offset 0x709	/* unknown */
-	UINT8					pmID;					// size 0x001, offset 0x70a
-	s8						minSyncRssi;			// size 0x001, offset 0x70b	// implied by usage and stripped symbols _WUD[GS]etSyncRssi
+	char unsigned			unk_0x709;							// size 0x001, offset 0x709	/* unknown */
+	UINT8					pmID;								// size 0x001, offset 0x70a
+	s8						syncRssi;							// size 0x001, offset 0x70b	// implied by usage and stripped symbols _WUD[GS]etSyncRssi
 	byte_t					__pad0[4]; // alignment?
-	OSAlarm					alarm;					// size 0x030, offset 0x710
-	u32						hhFlags;				// size 0x004, offset 0x740	// some flags maybe?
+	OSAlarm					alarm;								// size 0x030, offset 0x710
+	u32						hhFlags;							// size 0x004, offset 0x740	// some flags maybe?
 
 	// see WUDGetBufferStatus
-	u16						bufferStatus0;			// size 0x002, offset 0x744
-	u16						bufferStatus1;			// size 0x002, offset 0x746
+	u16						bufferStatus0;						// size 0x002, offset 0x744
+	u16						bufferStatus1;						// size 0x002, offset 0x746
 
-	s8						initWaitDeviceUpFrames;	// size 0x001, offset 0x748
-	s8						waitStartSearchFrames;	// size 0x001, offset 0x749
-	s16						waitIncomingFrames;		// size 0x002, offset 0x74a
+	s8						initWaitDeviceUpFrames;				// size 0x001, offset 0x748
+	s8						waitStartSearchFrames;				// size 0x001, offset 0x749
+	s16						waitIncomingFrames;					// size 0x002, offset 0x74a
 	byte_t					__pad1[4]; // alignment?
 } wud_cb_st; // size 0x750
 

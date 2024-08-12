@@ -26,6 +26,12 @@
 #define OSAssertMessage_Line(line_, exp_, ...)	OSAssertMessage_FileLine(__FILE__,   line_ , exp_, __VA_ARGS__)
 #define OSAssert_Line(line_, exp_)				OSAssertMessage_FileLine(__FILE__,   line_ , exp_, "Failed assertion " #exp_)
 
+// OSError
+#define OSError_FileLine(file_, line_, ...)		OSPanic(file_, line_, __VA_ARGS__)
+
+// defined in terms of OSError_FileLine
+#define OSError_Line(line_, ...)				OSError_FileLine(__FILE__,   line_ , __VA_ARGS__)
+
 // OS
 typedef u32 OSTick;
 typedef s64 OSTime;
@@ -39,6 +45,7 @@ enum OSAppType_et
 };
 
 extern BOOL __OSInIPL;
+extern OSTime __OSStartTime;
 
 void OSRegisterVersion(const char *version);
 const char *OSGetAppGamename(void);
@@ -102,7 +109,7 @@ struct OSContext
 	register_t	gqr[8];				// offset 0x1a4, size 0x020
 	u32			psf_pad;			// offset 0x1c4, size 0x004
 	f64			psf[32];			// offset 0x1c8, size 0x100
-} __typedef__ (OSContext); // size 0x2c8
+}; // size 0x2c8
 
 void OSSwitchFiberEx(register_t arg0, register_t arg1, register_t arg2,
                      register_t arg3, OSFiber *func, void *stack);
@@ -279,18 +286,129 @@ inline void ACRWriteReg(u32 reg, u32 val)
 	__IPCRegs[reg >> 2] = val;
 }
 
+// NAND
+
+#define FS_MAX_PATH 64
+
+typedef s32 NANDResult;
+enum NANDResult_et
+{
+	NAND_RESULT_OK				= 0,
+
+	NAND_RESULT_FATAL_ERROR		= -128,
+	NAND_RESULT_UNKNOWN			= -64,
+
+	NAND_RESULT_ACCESS			= -1,
+	NAND_RESULT_ALLOC_FAILED	= -2,
+	NAND_RESULT_BUSY			= -3,
+	NAND_RESULT_CORRUPT			= -4,
+	NAND_RESULT_ECC_CRIT		= -5,
+	NAND_RESULT_EXISTS			= -6,
+
+	NAND_RESULT_INVALID			= -8,
+	NAND_RESULT_MAXBLOCKS		= -9,
+	NAND_RESULT_MAXFD			= -10,
+	NAND_RESULT_MAXFILES		= -11,
+	NAND_RESULT_NOEXISTS		= -12,
+	NAND_RESULT_NOTEMPTY		= -13,
+	NAND_RESULT_OPENFD			= -14,
+	NAND_RESULT_AUTHENTICATION	= -15,
+	NAND_RESULT_MAXDEPTH		= -16,
+
+#define NAND_ESUCCESS	NAND_RESULT_OK
+#define NAND_EFATAL		NAND_RESULT_FATAL_ERROR
+};
+
+typedef u8 NANDOpenMode;
+enum NANDOpenMode_et
+{
+	NAND_OPEN_NONE,
+
+	NAND_OPEN_READ,
+	NAND_OPEN_WRITE,
+	NAND_OPEN_RW,
+};
+
+typedef enum NANDSeekMode
+{
+	NAND_SEEK_SET,
+	NAND_SEEK_CUR,
+	NAND_SEEK_END
+} NANDSeekMode;
+
+typedef struct NANDCommandBlock NANDCommandBlock;
+typedef void NANDAsyncCallback(NANDResult result, NANDCommandBlock *block);
+
+// [SPQE7T]/ISpyD.elf:.debug_info::0x283b92
+typedef struct NANDFileInfo
+{
+	s32		fileDescriptor;			// size 0x04, offset 0x00
+	s32		origFd;					// size 0x04, offset 0x04
+	char	origPath[FS_MAX_PATH];	// size 0x40, offset 0x08
+	char	tmpPath[FS_MAX_PATH];	// size 0x40, offset 0x48
+	u8		accType;				// size 0x01, offset 0x88
+	u8		stage;					// size 0x01, offset 0x89
+	u8		mark;					// size 0x01, offset 0x8a
+	// 1 byte padding
+} NANDFileInfo; // size 0x8c
+
+// [SPQE7T]/ISpyD.elf:.debug_info::0x2837aa
+struct NANDCommandBlock
+{
+	void		*userData;				// size 0x04, offset 0x00
+	void		*callback;				// size 0x04, offset 0x04 // not NANDAsyncCallback *?
+	void		*fileInfo;				// size 0x04, offset 0x08 // not NANDFileInfo *?
+	void		*bytes;					// size 0x04, offset 0x0c
+	void		*inodes;				// size 0x04, offset 0x10
+	void		*status;				// size 0x04, offset 0x14
+	u16			ownerId;				// size 0x02, offset 0x18
+	u16			groupId;				// size 0x02, offset 0x1a
+	u8			nextStage;				// size 0x01, offset 0x1c
+	// 3 bytes padding
+	u32			attr;					// size 0x04, offset 0x20
+	u32			ownerAcc;				// size 0x04, offset 0x24
+	u32			groupAcc;				// size 0x04, offset 0x28
+	u32			othersAcc;				// size 0x04, offset 0x2c
+	u32			num;					// size 0x04, offset 0x30
+	char		absPath[FS_MAX_PATH];	// size 0x40, offset 0x34
+	u32			*length;				// size 0x04, offset 0x74
+	u32			*pos;					// size 0x04, offset 0x78
+	int			state;					// size 0x04, offset 0x7c
+	void		*copyBuf;				// size 0x04, offset 0x80
+	u32			bufLength;				// size 0x04, offset 0x84
+	u8			*type;					// size 0x04, offset 0x88
+	u32			uniqNo;					// size 0x04, offset 0x8c
+	u32			reqBlocks;				// size 0x04, offset 0x90
+	u32			reqInodes;				// size 0x04, offset 0x94
+	u32			*answer;				// size 0x04, offset 0x98
+	u32			homeBlocks;				// size 0x04, offset 0x9c
+	u32			homeInodes;				// size 0x04, offset 0xa0
+	u32			userBlocks;				// size 0x04, offset 0xa4
+	u32			userInodes;				// size 0x04, offset 0xa8
+	u32			workBlocks;				// size 0x04, offset 0xac
+	u32			workInodes;				// size 0x04, offset 0xb0
+	const char	**dir;					// size 0x04, offset 0xb4
+	int			simpleFlag;				// size 0x04, offset 0xb8
+}; // size 0xbc
+
+NANDResult NANDReadAsync(NANDFileInfo *info, void *buf, u32 len,
+                         NANDAsyncCallback *callback, NANDCommandBlock *block);
+NANDResult NANDWriteAsync(NANDFileInfo *info, const void *buf, u32 len,
+                          NANDAsyncCallback *callback, NANDCommandBlock *block);
+NANDResult NANDSeekAsync(NANDFileInfo *info, s32 offset, NANDSeekMode whence,
+                         NANDAsyncCallback *callback, NANDCommandBlock *block);
+
+NANDResult NANDInit(void);
+
+NANDResult NANDOpenAsync(const char *path, NANDFileInfo *info,
+                         NANDOpenMode mode, NANDAsyncCallback *callback,
+                         NANDCommandBlock *block);
+NANDResult NANDCloseAsync(NANDFileInfo *info, NANDAsyncCallback *callback,
+                          NANDCommandBlock *block);
+
 // SC
 
 // from ogws
-typedef u32 SCStatus;
-enum SCStatus_et
-{
-	SC_STATUS_READY,
-	SC_STATUS_BUSY,
-	SC_STATUS_FATAL,
-	SC_STATUS_PARSE,
-};
-typedef void SCFlushCallback(SCStatus status);
 
 enum SCSensorBarPos
 {
@@ -341,6 +459,10 @@ typedef struct SCBtCmpDevInfoArray
 	SCBtCmpDevInfo	devices[6];		// size 0x204, offset 0x001
 } SCBtCmpDevInfoArray; // size 0x205
 
+void SCGetBtDeviceInfoArray(SCBtDeviceInfoArray *array);
+BOOL SCSetBtDeviceInfoArray(const SCBtDeviceInfoArray *array);
+void SCGetBtCmpDevInfoArray(SCBtCmpDevInfoArray *array);
+BOOL SCSetBtCmpDevInfoArray(const SCBtCmpDevInfoArray *array);
 u32 SCGetBtDpdSensibility(void);
 u8 SCGetWpadMotorMode(void);
 BOOL SCSetWpadMotorMode(u8 mode);
@@ -348,7 +470,37 @@ u8 SCGetWpadSensorBarPosition(void);
 u8 SCGetWpadSpeakerVolume(void);
 BOOL SCSetWpadSpeakerVolume(u8 vol);
 
+typedef s8 SCProductGameRegion;
+enum SCProductGameRegion_et
+{
+	SC_PRD_GAME_REG_JP,
+	SC_PRD_GAME_REG_US,
+	SC_PRD_GAME_REG_EU,
+	SC_PRD_GAME_REG_DEBUG,
+
+	SC_PRD_GAME_REG_KR,
+	SC_PRD_GAME_REG_CN,
+
+	SC_PRD_GAME_REG_MAX,
+	SC_PRD_GAME_REG_NULL	= -1
+};
+
+SCProductGameRegion SCGetProductGameRegion(void);
+
+typedef u32 SCStatus;
+enum SCStatus_et
+{
+	SC_STATUS_READY,
+	SC_STATUS_BUSY,
+	SC_STATUS_FATAL,
+	SC_STATUS_PARSE,
+};
+
+typedef void SCFlushCallback(SCStatus status);
+
+void SCInit(void);
 SCStatus SCCheckStatus(void);
+
 void SCFlushAsync(SCFlushCallback *cb);
 
 // VI

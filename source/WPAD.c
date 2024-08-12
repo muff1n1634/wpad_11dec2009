@@ -1180,7 +1180,7 @@ static void __wpadManageHandler0(OSAlarm *alarm, OSContext *context)
 {
 	OSSwitchFiberEx(
 		(register_t)alarm, (register_t)context, 0, 0, &__wpadManageHandler,
-		&__wpadManageHandlerStack[ARRAY_LENGTH(__wpadManageHandlerStack)]);
+		&__wpadManageHandlerStack[sizeof __wpadManageHandlerStack]);
 }
 
 static void __wpadClearControlBlock(WPADChannel chan)

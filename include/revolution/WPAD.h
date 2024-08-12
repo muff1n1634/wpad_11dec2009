@@ -7,6 +7,6 @@
 
 #include "WPAD/WPAD.h"
 #include "WPAD/WPADMem.h"
-// #include "WPAD/WUD.h" // see WPAD/WUD.h for notes
+// #include "WPAD/WUD.h" // i don't think this was public? so commented out
 
 #endif // RVL_SDK_LIB_WPAD_H
