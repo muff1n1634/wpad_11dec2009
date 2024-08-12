@@ -22,9 +22,9 @@
  * macros
  */
 
-// WPADStatusEx is the largest WPADStatus variant (size 0x5a0)
+// WPADStatusEx is the largest WPADStatus variant (size 0x5a)
 // 0x20 is an arbitrary power
-#define RX_BUFFER_SIZE					0x60
+#define RX_BUFFER_SIZE					ROUND_UP(sizeof(WPADStatusEx), 0x20)
 
 #define WPAD_CONFIG_BLOCK_CHECKSUM_BIAS	0x55
 #define WPAD_MAX_CONFIG_BLOCKS			2

@@ -1,10 +1,10 @@
-#if !defined(PREPROCESS)
 #include "WPADHIDParser.h"
 
 /*******************************************************************************
  * headers
  */
 
+#include <errno.h>
 #include <math.h>
 #include <string.h>
 
@@ -22,9 +22,6 @@
 #endif
 
 #include "context.h"
-#else
-#include "wmacros.h"
-#endif
 
 /*******************************************************************************
  * constants
@@ -32,7 +29,7 @@
 
 #define CONST_FLOAT_PI	3.141592f
 
-// TODO: may need to move these to external <WPAD/WPAD.h>
+// TODO: may want to move these to <WPAD/WPAD.h>?
 
 #define DPD_MAX_X		0x3ff
 #define DPD_MAX_Y		0x2ff
@@ -42,7 +39,7 @@
  */
 
 // clang-format off
-#if !defined(PREPROCESS)
+
 /* WARNING: This macro cannot be wrapped in a do-while block because the
  * declaration of unusedBits_ would cause the stack to be referenced through r31
  * instead of r1 on debug, so take care when using.
@@ -71,9 +68,9 @@
 // IR camera (DPD)
 
 // Accelerometer
-#define MAKE_DEV_CONFIG_ACC_X(high_, low_)				((((u16)(high_) << 2) & 0xfffc) | (u16)(((u16)(low_) >> 4) & 0x0003))
-#define MAKE_DEV_CONFIG_ACC_Y(high_, low_)				((((u16)(high_) << 2) & 0xfffc) | (u16)(((u16)(low_) >> 2) & 0x0003))
-#define MAKE_DEV_CONFIG_ACC_Z(high_, low_)				((((u16)(high_) << 2) & 0xfffc) | (u16)( (u16)(low_)       & 0x0003))
+#define MAKE_DEV_CONFIG_ACC_X(high_, low_)				((u16)(((u16)(high_) << 2) & 0xfffc) | (u16)(((u16)(low_) >> 4) & 0x0003))
+#define MAKE_DEV_CONFIG_ACC_Y(high_, low_)				((u16)(((u16)(high_) << 2) & 0xfffc) | (u16)(((u16)(low_) >> 2) & 0x0003))
+#define MAKE_DEV_CONFIG_ACC_Z(high_, low_)				((u16)(((u16)(high_) << 2) & 0xfffc) | (u16)( (u16)(low_)       & 0x0003))
 
 // Assorted
 #define MAKE_DEV_CONFIG_VOLUME(val_)					((val_) & (u8) 0x7f)
@@ -90,14 +87,14 @@
 
 #define RECALC_MP_CONFIG_SCALE_VALUE(val_)				(val_) = (val_) < 0.0f ? (val_) - 4000.0f : (val_) + 4000.0f
 
-#define MAKE_MPLS_CONFIG_ID(high_, low_)				((u16)(((u16)(high_) << 8) & 0xff00) | (u16)((u16)(low_) & 0x00ff))
+#define MAKE_MPLS_CONFIG_ID(high_, low_)				((u16)((u16)((u16)(high_) << 8) & 0xff00) | (u16)((u16)(low_) & 0x00ff))
 
 /*
  * Data reports
  */
 
 // Buttons
-#define MAKE_BUTTON(high_, low_)						(((u16)((u16)((u16)(low_) & 0x00ff)) | (u16)(((u16)(high_) << 8) & 0xff00)) & WPAD_BUTTON_ALL)
+#define MAKE_BUTTON(high_, low_)						((u16)((u16)((u16)((u16)(low_) & 0x00ff)) | (u16)((u16)((high_) << 8) & 0xff00)) & WPAD_BUTTON_ALL)
 
 // Standard accelerometer report
 #define MAKE_ACC_STANDARD_X(wpadcb_, high_, low_)		((s16)((s16)((s16)((s16)(high_) << 2) & ~0x03) | (s16)((s16)(u16)((low_) >> 5) & 0x03)) - (s16)((wpadcb_)->devConfig.accX0g))
@@ -183,7 +180,7 @@
 #define MAKE_TR_BUTTON									MAKE_CL_BUTTON
 
 // Balance Board extension report
-#define MAKE_BL_WEIGHT(high_, low_)						((u16)((u16)((high_) & 0xff) << 8) | (u16)((low_) & 0xff))
+#define MAKE_BL_WEIGHT(high_, low_)						((u16)((u16)((high_) << 8) & 0xff00) | (u16)((low_) & 0x00ff))
 
 #define MAKE_BL_WEIGHT_UL								MAKE_BL_WEIGHT
 #define MAKE_BL_WEIGHT_UR								MAKE_BL_WEIGHT
@@ -197,17 +194,17 @@
 #define MAKE_VS_SET_0(high_, low_)						((u16)((u16)((u16)(high_) << 2) & 0xfffc) | (u16)((u16)((low_) >> 6) & 0x0003))
 #define MAKE_VS_SET_1(high_, low_)						((u16)((u16)((u16)(high_) << 2) & 0xfffc) | (u16)((u16)((low_) >> 4) & 0x0003))
 #define MAKE_VS_SET_2(high_, low_)						((u16)((u16)((u16)(high_) << 2) & 0xfffc) | (u16)((u16)((low_) >> 2) & 0x0003))
-#define MAKE_VS_SET_3(high_, low_)						((u16)((u16)((u16)(high_) << 2) & 0xfffc) | (u16)((u16) (low_)       & 0x0003))
+#define MAKE_VS_SET_3(high_, low_)						((u16)((u16)((u16)(high_) << 2) & 0xfffc) | (u16)((u16)((low_) >> 0) & 0x0003))
 #define MAKE_VS_SET_4(high_, low_)						((u16)((u16)((u16)(high_) << 2) & 0xfffc) | (u16)((u16)((low_) >> 6) & 0x0003)) // same as MAKE_VS_SET_1
 
 #define MAKE_VS_42(high_, low_)							((u16)((u16)((u16)((u16)(high_) << 4) & 0xf3f0)) | (u16)((u16)((low_) >> 2) & 0x000f))
 
-#define MAKE_VS_44(byte_)								((u8)((u8)(byte_) & 0x02))
+#define MAKE_VS_44(byte_)								((u8)((u8)(byte_) & 0x03))
 
 // Motion Plus extension reports
 
 // Motion Plus non-passthrough acc/gyro report
-#define MAKE_MP_MAIN_STAT(high_, low_)					((u8)((u8)((u8)((high_) << 2) & 0x0c) | (u8)((u8)(low_) & 0x02)) | WPAD_MPLS_STATUS_DATA_VALID)
+#define MAKE_MP_MAIN_STAT(high_, low_)					((u8)((u8)((u8)((high_) << 2) & 0x0c) | (u8)((u8)(low_) & 0x03)) | WPAD_MPLS_STATUS_DATA_VALID)
 #define MAKE_MP_MAIN_PITCH(high_, low_)					(s16)((low_) & 0x00ff) | (s16)((s16)((high_) << 6) & 0x3f00)
 #define MAKE_MP_MAIN_YAW(high_, low_)					(s16)((low_) & 0x00ff) | (s16)((s16)((high_) << 6) & 0x3f00)
 #define MAKE_MP_MAIN_ROLL(high_, low_)					(s16)((low_) & 0x00ff) | (s16)((s16)((high_) << 6) & 0x3f00)
@@ -236,22 +233,22 @@
 #define MAKE_MP_CL_STICK_LY(val_)						((s16)((val_) & 0x3e) << 4)
 #define MAKE_MP_CL_STICK_RX(high_, mid_, low_)			((s16)((s16)((s16)((s16)(high_) >> 3) & 0x18) | (s16)((s16)((s16)(mid_) >> 5) & 0x06) | (s16)((s16)((s16)(low_) >> 7) & 0x01)) << 5)
 #define MAKE_MP_CL_STICK_RY(val_)						((s16)((val_) & 0x1f) << 5)
-#define MAKE_MP_CL_TRIGGER_L(high_, low_)				((u8)((u8)((u8)((high_) >> 2) & 0x18) | (u8)((u8)((low_) >> 5) & 0x03)) << 3)
+#define MAKE_MP_CL_TRIGGER_L(high_, low_)				((u8)((u8)((u8)((high_) >> 2) & 0x18) | (u8)((u8)((low_) >> 5) & 0x07)) << 3)
 #define MAKE_MP_CL_TRIGGER_R(val_)						((u8)((u8)(val_) & 0x1f) << 3)
 #define MAKE_MP_CL_BUTTON(high_, low_, up_, left_)		((u16)(((u16)((u16)(high_) << 8) & 0xfe00) | ((low_) & 0xfc) | (((u16)(left_) << 1) & 0x02) | ((up_) & 0x01)) ^ WPAD_BUTTON_CL_ALL)
 
 // Button report
-#define __parse_btn_data(wpadcb_, status_, btnFormat_, data_, length_)			\
-	do																			\
-	{																			\
-		(status_)->button = MAKE_BUTTON((data_)[RPT_BTN1], (data_)[RPT_BTN0]);	\
-																				\
-		if ((btnFormat_) == BTN_FORMAT_STANDARD)								\
-			(wpadcb_)->wpInfo.nearempty = (u8)((data_)[RPT_BTN0] >> 7);			\
-		else if ((btnFormat_) == BTN_FORMAT_INTERLEAVED)						\
-			(wpadcb_)->wpInfo.nearempty = FALSE;								\
+#define __parse_btn_data(wpadcb_, status_, btnFormat_, data_, length_)				\
+	do																				\
+	{																				\
+		(status_)->button = MAKE_BUTTON((data_)[RPT_BTN1], (data_)[RPT_BTN0]);		\
+																					\
+		if ((btnFormat_) == BTN_FORMAT_STANDARD)									\
+			(wpadcb_)->wpInfo.nearempty = (u8)(((data_)[RPT_BTN0] & 0x80) >> 7);	\
+		else if ((btnFormat_) == BTN_FORMAT_INTERLEAVED)							\
+			(wpadcb_)->wpInfo.nearempty = FALSE;									\
 	} while (0)
-#endif
+
 // clang-format on
 
 /*******************************************************************************
@@ -293,7 +290,7 @@ typedef void InputReportParser(u8 chan, byte_t *hidReport, void *rxBuffer);
 static void __wpadAbortInitExtension(WPADChannel chan, WPADResult result);
 static void __wpadGetDevConfig(WPADChannel chan, WPADResult result);
 static BOOL __wpadCheckCalibration(byte_t *data, u8 checksumOffset,
-                                     ChecksumType checksumType);
+                                   ChecksumType checksumType);
 static void __wpadGetFsConfig(WPADChannel chan, byte_t *config);
 static void __wpadGetClConfig(WPADChannel chan, byte_t *config);
 static void __wpadGetMpConfig(WPADChannel chan, byte_t *config,
@@ -355,6 +352,8 @@ static void __wpadCertReset(WPADChannel chan);
  */
 
 // .rodata
+
+// clang-format off
 static const byte_t _cExtInvalidData[RPT_MAX_SIZE] =
 {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -368,6 +367,7 @@ static const byte_t _cExtInvalidData2[RPT_MAX_SIZE] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+// clang-format on
 
 // .data
 
@@ -525,7 +525,7 @@ static void __wpadGetDevConfig(WPADChannel chan, WPADResult result)
 			for (j = index; j < index + WPAD_DPD_CONFIG_BLOCK_CHECKSUM; j++)
 				checksum += data[j];
 
-			checksum += 0x55;
+			checksum += WPAD_CONFIG_BLOCK_CHECKSUM_BIAS;
 			if (checksum != data[index + WPAD_DPD_CONFIG_BLOCK_CHECKSUM])
 				continue;
 
@@ -601,7 +601,7 @@ static void __wpadGetDevConfig(WPADChannel chan, WPADResult result)
 		y += p_wpd->devConfig.dpd[i].y - defaultDpdY[i];
 	}
 
-	// NOTE: keep like this; it matches for release
+	// NOTE: specifically not a compound assignment
 	x = x / 4.0f;
 	y = y / 4.0f;
 
@@ -621,7 +621,7 @@ static void __wpadGetDevConfig(WPADChannel chan, WPADResult result)
 		_wpadCenterY[chan] += b[i];
 	}
 
-	// NOTE: keep like this; it matches for release
+	// NOTE: specifically not a compound assignment
 	_wpadCenterX[chan] = _wpadCenterX[chan] / 4.0f;
 	_wpadCenterY[chan] = _wpadCenterY[chan] / 4.0f;
 
@@ -647,7 +647,7 @@ static void __wpadGetDevConfig(WPADChannel chan, WPADResult result)
 		for (j = index; j < index + WPAD_DEV_CONFIG_BLOCK_CHECKSUM; j++)
 			checksum += data[j];
 
-		checksum += 0x55;
+		checksum += WPAD_CONFIG_BLOCK_CHECKSUM_BIAS;
 
 		if (checksum != data[index + WPAD_DEV_CONFIG_BLOCK_CHECKSUM])
 			continue;
@@ -674,7 +674,7 @@ static void __wpadGetDevConfig(WPADChannel chan, WPADResult result)
 }
 
 static BOOL __wpadCheckCalibration(byte_t *data, u8 checksumOffset,
-                                     ChecksumType checksumType)
+                                   ChecksumType checksumType)
 {
 	BOOL success = FALSE;
 	u32 crc = 0;
@@ -796,7 +796,7 @@ static void __wpadGetExtConfig(WPADChannel chan, WPADResult result)
 	switch (result)
 	{
 	case WPAD_ENODEV:
-		p_wpd->devType = WPAD_DEV_NONE; // no device?
+		p_wpd->devType = WPAD_DEV_NONE;
 		p_wpd->savedDevType = p_wpd->devType;
 		p_wpd->extWasDisconnected = FALSE;
 		break;
@@ -861,7 +861,6 @@ static void __wpadGetExtConfig(WPADChannel chan, WPADResult result)
 		p_wpd->extConfig.mpls.calibCRC = -1;
 
 		byte_t saveCRC[sizeof(u16)];
-
 		saveCRC[0] = data[14];
 		saveCRC[1] = data[15];
 
@@ -972,7 +971,6 @@ static BOOL __wpadIsExtEncryptMain(u8 devType)
 	    || devType == WPAD_DEV_BULK_4 || devType == WPAD_DEV_BULK_5
 	    || devType == WPAD_DEV_BULK_6 || devType == WPAD_DEV_BULK_7
 	    || devType == WPAD_DEV_BULK_8)
-
 	{
 		return TRUE;
 	}
@@ -1039,7 +1037,7 @@ static void __wpadGetExtType(WPADChannel chan, WPADResult result)
 				if (__OSInIPL)
 				{
 					_wpadDevType[chan] = WPAD_DEV_CLASSIC;
-					_wpadDevMode[chan] = 1;
+					_wpadDevMode[chan] = WPAD_DEV_MODE_CLASSIC_REDUCED;
 					_wpadCLCompt[chan] = TRUE;
 				}
 				else
@@ -1296,8 +1294,9 @@ static void __wpadGetGameInfo(WPADChannel chan, WPADResult result, u8 param_3)
 		}
 		else
 		{
+			// WPAD_EINVAL?
 			p_wpd->at_0x038[param_3] = -4;
-		} // WPAD_EINVAL?
+		}
 	}
 	else
 	{
@@ -1395,7 +1394,7 @@ static void __wpadCheckDataFormat(u8 chan, u8 rep_id, void *data)
 	WPAD_FMT_BULK					= RPTID_DATA_BTN_ACC_EXT16
 */
 
-	/// clang-format off
+	// clang-format off
 	if ((rep_id == RPTID_DATA_BTN
 		&& p_wpd->dataFormat == WPAD_FMT_CORE_BTN)
 	|| (rep_id == RPTID_DATA_BTN_ACC
@@ -1425,6 +1424,7 @@ static void __wpadCheckDataFormat(u8 chan, u8 rep_id, void *data)
 		&& p_wpd->dataFormat == WPAD_FMT_BTN_ACC_DPD_EXTENDED)
 	|| (rep_id == RPTID_DATA_BTN_ACC_DPD18_2
 		&& p_wpd->dataFormat == WPAD_FMT_BTN_ACC_DPD_EXTENDED))
+	// clang-format on
 	{
 		status->err = WPAD_ESUCCESS;
 	}
@@ -1432,7 +1432,6 @@ static void __wpadCheckDataFormat(u8 chan, u8 rep_id, void *data)
 	{
 		status->err = WPAD_EINVAL;
 	}
-	// clang-format on
 }
 
 signed WPADiHIDParser(UINT8 port, UINT8 *p_rpt)
@@ -1503,24 +1502,13 @@ static void __a1_20_status_report(u8 chan, byte_t *hidReport, void *rxBuffer)
 		return;
 	}
 
+#if !defined(NDEBUG)
 	if (!WPADiIsDummyExtension(chan))
+#endif
+		p_wpd->wpInfo.attach = (hidReport[RPT20_FLAGS] & 0x02) >> 1;
 
-		p_wpd->wpInfo.attach =
-			((((hidReport[RPT20_FLAGS])
-		       & ((((1 << (((6) + 1) - (6))) - 1)
-		           << ((((sizeof(hidReport[RPT20_FLAGS]) * 8)) - 1) - (6))))))
-		     >> (((sizeof(hidReport[RPT20_FLAGS]) * 8) - 1) - (6)));
-
-	p_wpd->wpInfo.lowBat =
-		((((hidReport[RPT20_FLAGS])
-	       & ((((1 << (((7) + 1) - (7))) - 1)
-	           << ((((sizeof(hidReport[RPT20_FLAGS]) * 8)) - 1) - (7))))))
-	     >> (((sizeof(hidReport[RPT20_FLAGS]) * 8) - 1) - (7)));
-	p_wpd->wpInfo.led =
-		((((hidReport[RPT20_FLAGS])
-	       & ((((1 << (((3) + 1) - (0))) - 1)
-	           << ((((sizeof(hidReport[RPT20_FLAGS]) * 8)) - 1) - (3))))))
-	     >> (((sizeof(hidReport[RPT20_FLAGS]) * 8) - 1) - (3)));
+	p_wpd->wpInfo.lowBat = hidReport[RPT20_FLAGS] & 0x01;
+	p_wpd->wpInfo.led = (hidReport[RPT20_FLAGS] & 0xf0) >> 4;
 
 	/* ERRATA: the masks (or shifts?) on the following statements are switched
 	 *
@@ -1530,21 +1518,9 @@ static void __a1_20_status_report(u8 chan, byte_t *hidReport, void *rxBuffer)
 	p_wpd->wpInfo.protocol = (hidReport[RPT20_PROTO_FW] & 0x0f) >> 4;
 	p_wpd->wpInfo.firmware = (hidReport[RPT20_PROTO_FW] & 0xf0) >> 0;
 
-	p_wpd->wpInfo.nearempty =
-		(u8)((((hidReport[RPT_BTN0])
-	           & ((((1 << (((0) + 1) - (0))) - 1)
-	               << ((((sizeof(hidReport[RPT_BTN0]) * 8)) - 1) - (0))))))
-	         >> (((sizeof(hidReport[RPT_BTN0]) * 8) - 1) - (0)));
-	p_wpd->wpInfo.dpd =
-		((((hidReport[RPT20_FLAGS])
-	       & ((((1 << (((4) + 1) - (4))) - 1)
-	           << ((((sizeof(hidReport[RPT20_FLAGS]) * 8)) - 1) - (4))))))
-	     >> (((sizeof(hidReport[RPT20_FLAGS]) * 8) - 1) - (4)));
-	p_wpd->wpInfo.speaker =
-		((((hidReport[RPT20_FLAGS])
-	       & ((((1 << (((5) + 1) - (5))) - 1)
-	           << ((((sizeof(hidReport[RPT20_FLAGS]) * 8)) - 1) - (5))))))
-	     >> (((sizeof(hidReport[RPT20_FLAGS]) * 8) - 1) - (5)));
+	p_wpd->wpInfo.nearempty = (u8)((hidReport[RPT_BTN0] & 0x80) >> 7);
+	p_wpd->wpInfo.dpd = (hidReport[RPT20_FLAGS] & 0x08) >> 3;
+	p_wpd->wpInfo.speaker = (hidReport[RPT20_FLAGS] & 0x04) >> 2;
 
 	if (p_wpd->devType == WPAD_DEV_BALANCE_CHECKER)
 		p_wpd->wpInfo.battery = p_wpd->blcBattery;
@@ -1628,15 +1604,7 @@ static void __a1_21_user_data(u8 chan, byte_t *hidReport, void *rxBuffer)
 	u16 readAddrHigh;
 	s16 addrDiff;
 
-	u8 errCode =
-		(((((u8)hidReport[RPT21_SIZE_ERR])
-	       >> (((sizeof((u8)hidReport[RPT21_SIZE_ERR]) * 8) - 1) - (7))))
-	     & ((((1 << (((((sizeof((u8)hidReport[RPT21_SIZE_ERR]) * 8) - 1)) + 1)
-	                 - (((sizeof((u8)hidReport[RPT21_SIZE_ERR]) * 8) - 1)
-	                    - ((7) - (4)))))
-	          - 1)
-	         << ((((sizeof((u8)hidReport[RPT21_SIZE_ERR]) * 8)) - 1)
-	             - (((sizeof((u8)hidReport[RPT21_SIZE_ERR]) * 8) - 1))))));
+	u8 errCode = (u8)hidReport[RPT21_SIZE_ERR] & 0x0f;
 	if (errCode != 0)
 	{
 		p_wpd->wmReadHadError = -1;
@@ -1675,8 +1643,8 @@ static void __a1_21_user_data(u8 chan, byte_t *hidReport, void *rxBuffer)
 			cbRet = p_wpd->wmReadHadError < 0 ? WPAD_CERR_3 : WPAD_CESUCCESS;
 
 			if (readAddrHigh == 0x04a4
-			        && p_wpd->extState == WPAD_STATE_EXT_ENCRYPTED
-			    || p_wpd->extState == WPAD_STATE_EXT_ENCRYPTED_3RD)
+			    && (p_wpd->extState == WPAD_STATE_EXT_ENCRYPTED
+			        || p_wpd->extState == WPAD_STATE_EXT_ENCRYPTED_3RD))
 			{
 				WPADiDecode(chan, p_wpd->wmReadDataPtr, p_wpd->wmReadLength,
 				            readAddrLow);
@@ -1695,7 +1663,6 @@ static void __a1_21_user_data(u8 chan, byte_t *hidReport, void *rxBuffer)
 
 			if (p_wpd->wmReadAddress == WM_REG_EXTENSION_F0
 			    || p_wpd->wmReadAddress == WM_REG_EXTENSION_FA)
-
 			{
 				__wpadGetExtType(chan, cbRet);
 			}
@@ -1782,16 +1749,17 @@ static void __parse_dpd_data(WPADChannel chan, WPADStatus **status,
 		{
 			if (i * 3 + 2 < length)
 			{
-				a = ((u8 *)&data[i * 3])[0];
-				b = ((u8 *)&data[i * 3])[1];
-				c = ((u8 *)&data[i * 3])[2];
+				a = ((u8 *)(data + i * 3))[0];
+				b = ((u8 *)(data + i * 3))[1];
+				c = ((u8 *)(data + i * 3))[2];
 
 				status[0]->obj[i].x = MAKE_DPD_STANDARD_X(c, a);
 				status[0]->obj[i].y = MAKE_DPD_STANDARD_Y(c, b);
 				status[0]->obj[i].size = MAKE_DPD_STANDARD_SIZE(c);
 				RECALC_DPD_STANDARD_SIZE(status[0]->obj[i].size);
 
-				if (status[0]->obj[i].size == 0 || status[0]->obj[i].x == DPD_MAX_X
+				if (status[0]->obj[i].size == 0
+				    || status[0]->obj[i].x == DPD_MAX_X
 				    || status[0]->obj[i].y == DPD_MAX_Y)
 				{
 					status[0]->obj[i].x = 0;
@@ -1831,7 +1799,8 @@ static void __parse_dpd_data(WPADChannel chan, WPADStatus **status,
 				status[0]->obj[i].y = MAKE_DPD_BASIC_Y2(c, b);
 			}
 
-			if (status[0]->obj[i].x == DPD_MAX_X || status[0]->obj[i].y == DPD_MAX_Y)
+			if (status[0]->obj[i].x == DPD_MAX_X
+			    || status[0]->obj[i].y == DPD_MAX_Y)
 			{
 				status[0]->obj[i].x = 0;
 				status[0]->obj[i].y = DPD_MAX_Y;
@@ -2132,7 +2101,7 @@ static void __parse_bl_data(WPADChannel chan, WPADBLStatus **blStatus,
 
 	int battery = blStatus[0]->battery << 1;
 
-	// what is this opt
+	// what is this optimization??? x < n vs n >= x
 	if (battery >= 260)
 		p_wpd->blcBattery = 4;
 	else if (battery < 260 && battery >= 250)
@@ -2152,7 +2121,8 @@ static void __parse_vs_data(WPADChannel chan, WPADVSStatus **vsStatus,
                             u8 vsFormat __attribute__((unused)), byte_t *data,
                             u8 length __attribute__((unused)))
 {
-	/*
+
+/*
            +-------------------------------------------------------+
            |                          Bits                         |
            +------+------+------+------+------+------+------+------+
@@ -2210,6 +2180,7 @@ at_0x40 :  8;
 // likely some other stuff
 at_0x42 : 10;
 at_0x44 :  2; // error code 255 if outside the range
+
 */
 
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
@@ -2267,7 +2238,6 @@ static void __parse_mp_data(WPADChannel chan, WPADMPStatus **mpStatus,
 	}
 	else if (mpFormat == WPAD_DEV_MODE_MPLS_PT_FS
 	         || mpFormat == WPAD_DEV_MODE_MPLS_PT_CLASSIC)
-
 	{
 		u8 bufIndex = p_wpd->rxBufIndex != 0 ? 0 : 1;
 		WPADMPStatus *rxBuf = (WPADMPStatus *)(p_wpd->rxBufs[bufIndex]);
@@ -2291,9 +2261,7 @@ static void __parse_mp_data(WPADChannel chan, WPADMPStatus **mpStatus,
 			        && p_wpd->devMode != WPAD_DEV_MODE_MPLS_PT_CLASSIC)
 			    || p_wpd->devType == WPAD_DEV_MPLS_PT_UNKNOWN)
 			{
-				/* ~WPAD_MPLS_STATUS_EXTENSION_DATA_VALID but that with a cast
-				 * doesn't work on debug for some reason
-				 */
+				// ~WPAD_MPLS_STATUS_EXTENSION_DATA_VALID
 				mpStatus[0]->stat &= 0xbf;
 			}
 			else
@@ -2447,8 +2415,7 @@ hack:; // What
 		p_wpd->devType = WPAD_DEV_MOTION_PLUS;
 
 		/* ~(WPAD_MPLS_STATUS_EXTENSION_DATA_VALID
-		 * | WPAD_MPLS_STATUS_EXTENSION_CONNECTED) but that with a cast doesn't
-		 * work on debug for some reason
+		 * | WPAD_MPLS_STATUS_EXTENSION_CONNECTED)
 		 */
 		mpStatus[0]->stat &= 0xbe;
 
@@ -2608,7 +2575,7 @@ static void __parse_ext_data(WPADChannel chan, void *parseBuf,
 		}
 		else if (p_wpd->devType == WPAD_DEV_VSM)
 		{
-			// note the use of dataFormat instead of devMode
+			// note the use of dataFormat instead of devMode here
 			__parse_vs_data(chan, (WPADVSStatus **)&parseBuf, p_wpd->dataFormat,
 			                p_wpd->extDataBuf, p_wpd->extDataLength);
 		}
