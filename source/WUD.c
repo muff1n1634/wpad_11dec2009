@@ -1895,6 +1895,7 @@ static void __wudNandResultCallback(NANDResult result, NANDCommandBlock *block
                                     __attribute__((unused)))
 {
 	// ?
+#if !defined(NDEBUG)
 	// clang-format off
 	const char *funcNames[6] __attribute__((unused)) =
 	{
@@ -1906,6 +1907,7 @@ static void __wudNandResultCallback(NANDResult result, NANDCommandBlock *block
 		"NANDClose"
 	};
 	// clang-format on
+#endif // !defined(NDEBUG)
 
 	_wudNandLocked = FALSE;
 
@@ -1957,8 +1959,8 @@ static u32 __wudCalcWiiFitCrc1(void *data_, u32 length_)
 static u32 __wudCalcWiiFitCrc2(void *data_, u32 length_, u32 crc)
 {
 	u16 *data = data_;
-	u32 crcHi = (crc >> 16) & 0xffff;
-	u16 crcLo = crc & 0xffff;
+	u32 crcHi = (u16)(crc >> 16);
+	u16 crcLo = (u16)crc;
 
 	u32 i;
 	u32 length = length_ / sizeof *data;
@@ -2338,7 +2340,7 @@ void WUDShutdown(BOOL saveSimpleDevs)
 	if (saveSimpleDevs)
 	{
 		i = 0;
-		infoList = __rvl_wudcb.stdListHead;
+		infoList = __rvl_wudcb.smpListHead;
 		while (infoList)
 		{
 			WUD_BDCPY(_spArray.devices[i].devAddr, infoList->devInfo->devAddr);
@@ -2564,7 +2566,11 @@ BOOL WUDSetDisableChannel(s8 afhChannel)
 
 	wud_cb_st *p_wcb = &__rvl_wudcb;
 
+#if defined(NDEBUG)
+	if ((u8)afhChannel < 0 || 13 < (u8)afhChannel)
+#else
 	if (afhChannel < 0 || 13 < afhChannel)
+#endif
 		return success;
 
 	BOOL intrStatus = OSDisableInterrupts();
