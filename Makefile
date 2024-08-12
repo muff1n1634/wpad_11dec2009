@@ -29,6 +29,7 @@ WPAD_LIB = wpad${LIBSUFFIX}.a
 .NOTPARALLEL: ${WPAD_LIB}
 
 wpad: ${WPAD_LIB}
+clean:; -@rm -r build/
 
 ${WPAD_LIB}: WPAD.o WPADHIDParser.o WPADMem.o WPADEncrypt.o lint.o WUD.o WUDHidHost.o
 	${WINE} ${MWERKS} -library -o build/$@ $?
