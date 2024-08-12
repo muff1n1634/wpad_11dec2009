@@ -31,8 +31,7 @@ void WPADiClearMemBlock(WPADChannel chan)
 }
 
 WPADResult WPADWriteExtReg(WPADChannel chan, const void *data, u16 length,
-                           WPADExtRegType extReg, u16 address,
-                           WPADCallback *cb)
+                           WPADExtRegType extReg, u16 address, WPADCallback *cb)
 {
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
 
@@ -60,8 +59,8 @@ WPADResult WPADWriteExtReg(WPADChannel chan, const void *data, u16 length,
 
 	u32 finalAddress = (address & 0xffff) | (extReg << 16) | (1 << 26);
 
-	success = WPADiSendWriteData(&p_wpd->stdCmdQueue, data, length,
-                                 finalAddress, cb);
+	success =
+		WPADiSendWriteData(&p_wpd->stdCmdQueue, data, length, finalAddress, cb);
 	status = success ? WPAD_CESUCCESS : WPAD_CECOMM;
 
 end:
