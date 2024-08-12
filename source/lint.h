@@ -7,7 +7,7 @@
  * macros
  */
 
-#define LINTNextElement(a, b)	(((ULONG *)(&((a)[b])))[1])
+#define LINTNextElement(a, b)	((&((a)[b]))[1])
 
 /*******************************************************************************
  * types
@@ -25,7 +25,7 @@ typedef unsigned long long ULLONG;
  */
 
 int LINTCmp(const ULONG *lhs, const ULONG *rhs);
-void LINTLshift(ULONG *dst, /* const */ ULONG *src, ULONG shift);
+void LINTLshift(ULONG *dst, ULONG *src, ULONG shift);
 int LINTMsb(const ULONG *data);
 void LINTSub(ULONG *dst, const ULONG *lhs, const ULONG *rhs);
 void LINTMul(ULONG *dst, const ULONG *lhs, const ULONG *rhs);

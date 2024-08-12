@@ -5,7 +5,7 @@
  */
 
 #include <limits.h>
-#include <string.h>
+#include <string.h> // memset
 
 #include <types.h>
 
@@ -79,8 +79,8 @@ void LINTLshift(ULONG *dst, /* const */ ULONG *src, ULONG shift)
 	ULONG *srcData = src + 1;
 	ULONG *dstData = dst + 1;
 
-	ULONG bigShift = shift / 32;
-	ULONG smallShift = shift % 32;
+	ULONG bigShift = shift / ULONG_BIT;
+	ULONG smallShift = shift % ULONG_BIT;
 
 	for (i = 0; i < bigShift; i++)
 		dstData[i] = 0;
@@ -119,7 +119,7 @@ int LINTMsb(const ULONG *data)
 			break;
 
 		i++;
-		a = msbPos--;
+		a = msbPos--; // ?
 	}
 
 	return msbPos + (size - 1) * ULONG_BIT;
@@ -200,7 +200,7 @@ void LINTMul(ULONG *dst, const ULONG *lhs, const ULONG *rhs)
 		dstData[i + j] = num;
 	}
 
-	int a __attribute__((unused));
+	ULONG a __attribute__((unused)); // ?
 	if (num == 0)
 		a = *dst = lhsSize + rhsSize - 1;
 	else
