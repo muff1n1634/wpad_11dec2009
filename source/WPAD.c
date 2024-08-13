@@ -1,4 +1,3 @@
-#if !defined(PREPROCESS)
 #include <revolution/WPAD/WPAD.h>
 #include "WPAD.h"
 
@@ -10,10 +9,10 @@
 
 #include <types.h>
 
+#include "lint.h"
 #include "WPADHIDParser.h"
 #include "WPADMem.h"
 #include "WUD.h"
-#include "lint.h"
 
 #if 0
 #include <revolution/OS/OSAlarm.h>
@@ -30,20 +29,20 @@
 #include <revolution/VI/vi.h>
 #endif
 
-#include "context.h"
-#else
-#include "wmacros.h"
-#endif
+#include "context_bte.h"
+#include "context_rvl.h"
 
 /*******************************************************************************
  * macros
  */
 
-#define RVL_SDK_WPAD_DEBUG_BUILD_DATE	"Dec 11 2009"
-#define RVL_SDK_WPAD_DEBUG_BUILD_TIME	"15:55:10"
-
-#define RVL_SDK_WPAD_RELEASE_BUILD_DATE	"Dec 11 2009"
-#define RVL_SDK_WPAD_RELEASE_BUILD_TIME	"15:59:48"
+#if defined(NDEBUG)
+#define RVL_SDK_WPAD_VERSION_STRING	\
+	"<< RVL_SDK - WPAD \trelease build: Dec 11 2009 15:59:48 (" STR(__CWCC__) "_" STR(__CWBUILD__) ") >>"
+#else
+#define RVL_SDK_WPAD_VERSION_STRING	\
+	"<< RVL_SDK - WPAD \tdebug build: Dec 11 2009 15:55:10 (" STR(__CWCC__) "_" STR(__CWBUILD__) ") >>"
+#endif
 
 /*******************************************************************************
  * local function declarations
@@ -172,7 +171,7 @@ static const ULONG certv[] =
 // clang-format on
 
 // .data, .sdata
-const char *__WPADVersion = RVL_SDK_LIB_VERSION_STRING(WPAD);
+const char *__WPADVersion = RVL_SDK_WPAD_VERSION_STRING;
 static OSShutdownFunctionInfo ShutdownFunctionInfo;
 
 // .bss

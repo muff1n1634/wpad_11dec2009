@@ -18,6 +18,8 @@
 #include <revolution/OS/OSThread.h>
 #endif
 
+#include "context_rvl.h"
+
 /*******************************************************************************
  * macros
  */

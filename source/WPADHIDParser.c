@@ -20,7 +20,8 @@
 #include <revolution/OS/OSInterrupt.h>
 #endif
 
-#include "context.h"
+#include "context_bte.h" // UINT8
+#include "context_rvl.h"
 
 /*******************************************************************************
  * constants

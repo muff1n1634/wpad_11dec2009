@@ -30,7 +30,8 @@
 #include <revolution/SC/scsystem.h>
 #endif
 
-#include "context.h"
+#include "context_bte.h"
+#include "context_rvl.h"
 
 /*******************************************************************************
  * macros
@@ -1984,7 +1985,7 @@ static WUDInitState __wudGetDevInfoFromWiiFit(void)
 	if (_wudNandLocked)
 		return nextState;
 
-	if (!_wudNandBufPtr || !IS_ALIGNED(_wudNandBufPtr, 32))
+	if (!_wudNandBufPtr || !IS_ALIGNED(_wudNandBufPtr, 0x20))
 	{
 		OSError_Line(2745, "Error: the workarea for synchronizing WBC pairing "
 		                   "information is not allocated.\n");

@@ -12,7 +12,8 @@
 #include <revolution/OS/OSAssert.h>
 #endif
 
-#include "context.h"
+#include "context_bte.h"
+#include "context_rvl.h"
 
 /*******************************************************************************
  * macros

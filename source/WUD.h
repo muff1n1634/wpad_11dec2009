@@ -7,7 +7,7 @@
  * headers
  */
 
-#include <string.h> // IWYU pragma: keep(WUD_BD* macros)
+#include <string.h>
 
 #include <macros.h>
 #include <types.h>
@@ -16,7 +16,8 @@
 #include <revolution/OS/OSAlarm.h>
 #endif
 
-#include "context.h"
+#include "context_bte.h"
+#include "context_rvl.h" // OSAlarm
 
 /*******************************************************************************
  * macros
