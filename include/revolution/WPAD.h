@@ -5,8 +5,10 @@
  * headers
  */
 
-#include "WPAD/WPAD.h"
-#include "WPAD/WPADMem.h"
-// #include "WPAD/WUD.h" // i don't think this was public? so commented out
+#include <revolution/WPAD/WPAD.h>
+#include <revolution/WPAD/WPADMem.h>
+
+// i don't think this was public? so commented out
+// #include <revolution/WPAD/WUD.h>
 
 #endif // RVL_SDK_LIB_WPAD_H
