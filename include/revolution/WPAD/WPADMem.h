@@ -5,7 +5,6 @@
  * headers
  */
 
-#include <macros.h>
 #include <types.h>
 
 #include "WPAD.h"
@@ -20,8 +19,9 @@
  * macros
  */
 
-#define WM_MEM_ADDR(addr_)				 ((addr_) & 0xffff)
-#define WM_EXT_REG_ADDR(type_, addr_)	(((addr_) & 0xffff) | ((WPAD_EXT_REG_ ## type_) << 16) | (1 << 26))
+#define WM_MEM_ADDR(addr_)	((addr_) & 0xffff)
+#define WM_EXT_REG_ADDR(type_, addr_)	\
+	(((addr_) & 0xffff) | ((WPAD_EXT_REG_ ## type_) << 16) | (1 << 26))
 
 /*******************************************************************************
  * types
@@ -52,7 +52,7 @@ typedef struct WPADGameInfo
 	/* wiibrew says this exists in the header on the Wiimote but goes unused,
 	 * which matches up with the code I see here
 	 */
-	byte_t unknown[8];
+	byte_t	unknown[8];
 } WPADGameInfo; // size 0x38
 
 /*******************************************************************************

@@ -9,7 +9,6 @@
 
 #include <string.h>
 
-#include <macros.h>
 #include <types.h>
 
 #if 0

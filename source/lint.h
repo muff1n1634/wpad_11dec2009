@@ -18,7 +18,6 @@
 #endif
 
 typedef unsigned long ULONG;
-typedef unsigned long long ULLONG;
 
 /*******************************************************************************
  * functions

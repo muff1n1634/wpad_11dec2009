@@ -90,15 +90,15 @@ struct wud_discovery_response
 {
 	BD_ADDR				devAddr;		// size 0x06, offset 0x000
 	char				at_0x006[64];	// size 0x40, offset 0x006
-	byte_t				__pad0[0x100 - (0x06 + 0x40)]; // 0xba
+	byte_t				__pad0[0xba];
 	tBTA_SERVICE_MASK	services;		// size 0x04, offset 0x100
-	byte_t				__pad1[0x04];
+	byte_t				__pad1[0x04]; // alignment?
 }; // size 0x108
 
 struct wud_nand_wbc_info
 {
 	SCBtDeviceInfo	scDevInfo;	// size 0x46, offset 0x00
-	byte_t			__pad0[0xa0 - (0x00 + 0x46)]; // 0x5a
+	byte_t			__pad0[0x5a];
 }; // size 0xa0
 
 /*******************************************************************************
@@ -187,7 +187,8 @@ static void __wudShutdownHandler(void);
 static void __wudShutdownHandler0(OSAlarm *alarm, OSContext *context);
 static void __wudClearControlBlock(void);
 
-static BOOL __wudStartSyncDevice(WUDSyncType syncType, s8, u8, signed);
+static BOOL __wudStartSyncDevice(WUDSyncType syncType, s8 syncLopNum, u8 target,
+                                 signed);
 static BOOL __wudStartSyncStandard(signed);
 static BOOL __wudStartSyncSimple(signed);
 
@@ -245,7 +246,7 @@ static WUDDevInfo *__wudGetWbcDevice(void);
 // .data
 
 /* comments are from throwing the array into
- * eleccelerator.com/usbdescreqparser
+ * https://eleccelerator.com/usbdescreqparser
  * so shout out to that website thank you
  */
 static byte_t _wudWiiRemoteDescriptor[] =
@@ -999,7 +1000,7 @@ static WUDSyncState __wudSyncStoredLinkKeyToE2prom(void)
 {
 	wud_cb_st *p_wcb = &__rvl_wudcb;
 
-	if (!!__wudIsBusyLinkKeyCmd())
+	if (__wudIsBusyLinkKeyCmd())
 		return WUD_STATE_SYNC_STORED_LINK_KEY_TO_EEPROM;
 
 	if (WUDIsLinkedWBC() && WUD_DEV_NAME_IS_WBC(_wudDiscWork.small.devName))
@@ -1027,19 +1028,23 @@ static WUDSyncState __wudSyncStoredDevInfoToNand(void)
 	u8 i;
 	WUDSyncState nextState = WUD_STATE_SYNC_COMPLETE;
 
-	if (!!__wudIsBusyScCmd())
+	if (__wudIsBusyScCmd())
 		return WUD_STATE_SYNC_STORED_DEV_INFO_TO_NAND;
 
 	memset(&_scArray.devices, 0,
 	       sizeof _scArray.devices[i] * WUD_MAX_DEV_ENTRY_FOR_STD);
 	_scArray.num = __wudGetStdDevNumber();
 
-	for (infoList = __rvl_wudcb.stdListHead, (void)(i = 0); infoList;
-	     i++, (void)(infoList = infoList->next))
+	infoList = __rvl_wudcb.stdListHead;
+	i = 0;
+	while (infoList)
 	{
 		WUD_BDCPY(_scArray.devices[i].devAddr, infoList->devInfo->devAddr);
 		memcpy(&_scArray.devices[i].small, infoList->devInfo->small.devName,
 		       sizeof _scArray.devices[i].small);
+
+		i++;
+		infoList = infoList->next;
 	}
 
 	BOOL scSuccess = SCSetBtDeviceInfoArray(&_scArray);
@@ -1546,7 +1551,7 @@ static void __wudDeleteHandler(void)
 		p_wcb->deleteState = __wudDeleteDone();
 		break;
 
-		// Wii Fit states
+	// Wii Fit states
 
 	case WUD_STATE_WII_FIT_OPEN:
 		__wudOpenWiiFitFile();
@@ -1805,7 +1810,7 @@ static WUDInitState __wudInitDevInfo(void)
 		p_info = __wudGetNewDevInfo();
 		if (!p_info)
 		{
-			p_info = __wudGetDevInfoByIndex(((WUD_MAX_DEV_ENTRY_FOR_STD)-1));
+			p_info = __wudGetDevInfoByIndex(9);
 			a--;
 		}
 
@@ -1832,8 +1837,7 @@ static WUDInitState __wudInitDevInfo(void)
 	_scArray.num = a;
 	__rvl_wudcb.syncType = WUD_SYNC_TYPE_SIMPLE;
 
-	for (i = ((WUD_MAX_DEV_ENTRY_FOR_SMP)-1), arrayNum = _spArray.num; i >= 0;
-	     i--)
+	for (i = 5, arrayNum = _spArray.num; i >= 0; i--)
 	{
 		if (!arrayNum)
 			break;
@@ -1871,6 +1875,7 @@ static WUDInitState __wudInitDevInfo(void)
 
 	__rvl_wudcb.syncType = WUD_SYNC_TYPE_STANDARD;
 	__rvl_wudcb.initState = WUD_STATE_INIT_5;
+
 	memset(&_spArray, 0, sizeof _spArray);
 	SCSetBtDeviceInfoArray(&_scArray);
 	SCSetBtCmpDevInfoArray(&_spArray);
@@ -2256,7 +2261,7 @@ BOOL WUDInit(void)
 {
 	wud_cb_st *p_wcb = &__rvl_wudcb;
 
-	if (!!_wudInitialized)
+	if (_wudInitialized)
 		return FALSE;
 
 	OSAssertMessage_Line(3086, p_wcb->allocFunc && p_wcb->freeFunc,
@@ -2740,7 +2745,7 @@ static void __wudWritePatch(void)
 	for (i = 0; i < (s32)length; i++)
 	{
 		buf[(int)sizeof(u32) + i] =
-			_wudPatchData[((sizeof(_wudPatchSize)) + (sizeof(_wudPatchOffset)))
+			_wudPatchData[sizeof(_wudPatchSize) + sizeof(_wudPatchOffset)
 		                  + _wudPatchOffset + i];
 	}
 
@@ -2823,7 +2828,8 @@ static void __wudInitSub(void)
 	char devName[] = "Wii";
 
 	// [1]: 2.8 Class of Device (p. 45)
-	DEV_CLASS devClass = {
+	DEV_CLASS devClass =
+	{
 		0x00, // No designated Major Service Classes
 		0x04, // Major Device Class 4 (Audio/Video)
 		0x48  // Minor Device Class 18 (Audio/Video -> Gaming/Toy)
@@ -3827,7 +3833,7 @@ static void __wudDeviceStatusEventStackCallback(tBTM_DEV_STATUS status)
 {
 	if (status == BTM_DEV_STATUS_CMD_TOUT)
 	{
-		OSReport("---- WARNING: USB FATAL ERROR! ----\n"); // usb???
+		OSReport("---- WARNING: USB FATAL ERROR! ----\n"); // usb ???
 		WUDiShowFatalErrorMessage();
 	}
 }

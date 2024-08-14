@@ -32,7 +32,7 @@ typedef int				BOOL;
 #define TRUE			1
 #define FALSE			0
 
-// other
+// Other types
 
 typedef unsigned char	byte_t;
 typedef unsigned int	register_t;

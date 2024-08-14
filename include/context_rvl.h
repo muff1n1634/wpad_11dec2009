@@ -1,6 +1,7 @@
 #ifndef CONTEXT_RVL_H
 #define CONTEXT_RVL_H
 
+#include <macros.h> // ROUND_UP
 #include <types.h>
 
 #include "context_bte.h"
@@ -12,36 +13,42 @@
  * "context_bte.h".
  *
  * Ideally, this file's usages should be replaced with the headers in your
- * project that actually declare these symbols.
+ * project that declare these symbols.
  */
 
 #if !defined(NDEBUG)
 # define OSAssertMessage_FileLine(file_, line_, exp_, ...)	\
 	(void)((exp_) || (OSPanic(file_, line_, __VA_ARGS__), 0))
 #else
-# define OSAssertMessage_FileLine(file_, line_, exp_, ...)	((void)0)
+# define OSAssertMessage_FileLine(file_, line_, exp_, ...)	\
+	((void)0)
 #endif
 
 // defined in terms of OSAssertMessage_FileLine
-#define OSAssertMessage_Line(line_, exp_, ...)	OSAssertMessage_FileLine(__FILE__,   line_ , exp_, __VA_ARGS__)
-#define OSAssert_Line(line_, exp_)				OSAssertMessage_FileLine(__FILE__,   line_ , exp_, "Failed assertion " #exp_)
+#define OSAssertMessage_Line(line_, exp_, ...)	\
+	OSAssertMessage_FileLine(__FILE__, line_, exp_, __VA_ARGS__)
+#define OSAssert_Line(line_, exp_)	\
+	OSAssertMessage_FileLine(__FILE__, line_, exp_, "Failed assertion " #exp_)
 
 // OSError
-#define OSError_FileLine(file_, line_, ...)		OSPanic(file_, line_, __VA_ARGS__)
+#define OSError_FileLine(file_, line_, ...)	\
+	OSPanic(file_, line_, __VA_ARGS__)
 
 // defined in terms of OSError_FileLine
-#define OSError_Line(line_, ...)				OSError_FileLine(__FILE__,   line_ , __VA_ARGS__)
+#define OSError_Line(line_, ...)	\
+	OSError_FileLine(__FILE__, line_, __VA_ARGS__)
 
 // OS
-typedef u32 OSTick;
+
 typedef s64 OSTime;
+typedef u32 OSTick;
 
 typedef u8 OSAppType;
 enum OSAppType_et
 {
-	OS_APP_TYPE_IPL			= 0x40,
-	OS_APP_TYPE_DVD			= 0x80,
-	OS_APP_TYPE_CHANNEL		= 0x81,
+	OS_APP_TYPE_IPL		= 0x40,
+	OS_APP_TYPE_DVD		= 0x80,
+	OS_APP_TYPE_CHANNEL	= 0x81,
 };
 
 extern BOOL __OSInIPL;
@@ -52,10 +59,10 @@ const char *OSGetAppGamename(void);
 OSAppType OSGetAppType(void);
 
 #if defined(NDEBUG)
-# define OSPhysicalToCached(addr)	(void *)((u32)addr + 0x80000000)
-# define OSPhysicalToUncached(addr)	(void *)((u32)addr + 0xC0000000)
-# define OSCachedToPhysical(addr)	(void *)((u32)addr - 0x80000000)
-# define OSUncachedToPhysical(addr)	(void *)((u32)addr - 0xC0000000)
+# define OSPhysicalToCached(addr)	(void *)((u32)(addr) + 0x80000000)
+# define OSPhysicalToUncached(addr)	(void *)((u32)(addr) + 0xC0000000)
+# define OSCachedToPhysical(addr)	(void *)((u32)(addr) - 0x80000000)
+# define OSUncachedToPhysical(addr)	(void *)((u32)(addr) - 0xC0000000)
 #endif // defined(NDEBUG)
 
 void *(OSPhysicalToCached)(void *addr);
@@ -84,7 +91,7 @@ struct OSAlarm
 
 void OSCreateAlarm(OSAlarm *alarm);
 void OSSetPeriodicAlarm(OSAlarm *alarm, OSTime tick, OSTime period,
-						OSAlarmHandler handler);
+                        OSAlarmHandler handler);
 void OSCancelAlarm(OSAlarm *alarm);
 
 void DCInvalidateRange(const void *buf, u32 len);
@@ -94,25 +101,25 @@ typedef void OSFiber(/* unspecified */);
 // [SPQE7T]/ISpyD.elf:.debug_info::0x3135
 struct OSContext
 {
-	register_t	gpr[32];			// offset 0x000, size 0x080
-	register_t	cr;					// offset 0x080, size 0x004
-	register_t	lr;					// offset 0x084, size 0x004
-	register_t	ctr;				// offset 0x088, size 0x004
-	register_t	xer;				// offset 0x08c, size 0x004
-	f64			fpr[32];			// offset 0x090, size 0x100
-	u32			fpscr_pad;			// offset 0x190, size 0x004
-	register_t	fpscr;				// offset 0x194, size 0x004
-	register_t	srr0;				// offset 0x198, size 0x004
-	register_t	srr1;				// offset 0x19c, size 0x004
-	u16			mode;				// offset 0x1a0, size 0x002
-	u16			state;				// offset 0x1a2, size 0x002
-	register_t	gqr[8];				// offset 0x1a4, size 0x020
-	u32			psf_pad;			// offset 0x1c4, size 0x004
-	f64			psf[32];			// offset 0x1c8, size 0x100
+	register_t	gpr[32];			// size 0x080, offset 0x000
+	register_t	cr;					// size 0x004, offset 0x080
+	register_t	lr;					// size 0x004, offset 0x084
+	register_t	ctr;				// size 0x004, offset 0x088
+	register_t	xer;				// size 0x004, offset 0x08c
+	f64			fpr[32];			// size 0x100, offset 0x090
+	u32			fpscr_pad;			// size 0x004, offset 0x190
+	register_t	fpscr;				// size 0x004, offset 0x194
+	register_t	srr0;				// size 0x004, offset 0x198
+	register_t	srr1;				// size 0x004, offset 0x19c
+	u16			mode;				// size 0x002, offset 0x1a0
+	u16			state;				// size 0x002, offset 0x1a2
+	register_t	gqr[8];				// size 0x020, offset 0x1a4
+	u32			psf_pad;			// size 0x004, offset 0x1c4
+	f64			psf[32];			// size 0x100, offset 0x1c8
 }; // size 0x2c8
 
 void OSSwitchFiberEx(register_t arg0, register_t arg1, register_t arg2,
-                     register_t arg3, OSFiber *func, void *stack);
+                     register_t arg3, OSFiber *fiber, void *stack);
 
 u32 OSCalcCRC32(const void *data, u32 length);
 
@@ -129,17 +136,17 @@ typedef struct OSMutex OSMutex;
 typedef struct OSMutexLink
 {
 	OSMutex	*next;	// size 0x04, offset 0x00
-	OSMutex	*prev;	// size 0x04, offset 0x00
+	OSMutex	*prev;	// size 0x04, offset 0x04
 } OSMutexLink; // size 0x08
 
-typedef int OSShutdownPass; // from OSNet.c
+typedef int OSShutdownPass;
 enum OSShutdownPass_et
 {
 	OS_SHUTDOWN_PASS_FIRST,
 	OS_SHUTDOWN_PASS_SECOND
 };
 
-typedef u32 OSShutdownEvent; // from OSNet.c
+typedef u32 OSShutdownEvent;
 enum OSShutdownEvent_et
 {
 	OS_SHUTDOWN_EVENT_FATAL, // seems to be used by OSFatal
@@ -156,7 +163,7 @@ typedef BOOL OSShutdownFunction(OSShutdownPass pass, OSShutdownEvent event);
 typedef struct OSShutdownFunctionInfo OSShutdownFunctionInfo;
 struct OSShutdownFunctionInfo
 {
-	OSShutdownFunction		*func;	// size 0x04, offset 0x00 // Field name known from asserts
+	OSShutdownFunction		*func;	// size 0x04, offset 0x00	/* name known from asserts */
 	u32						prio;	// size 0x04, offset 0x04
 	OSShutdownFunctionInfo	*next;	// size 0x04, offset 0x08
 	OSShutdownFunctionInfo	*prev;	// size 0x04, offset 0x0c
@@ -197,22 +204,22 @@ typedef void *OSThreadFunction(void *arg);
 // [SPQE7T]/ISpyD.elf:.debug_info::0x2fb2
 typedef struct OSThreadQueue
 {
-	OSThread		*head;	// size 0x04, offset 0x00
-	OSThread		*tail;	// size 0x04, offset 0x04
+	OSThread	*head;	// size 0x04, offset 0x00
+	OSThread	*tail;	// size 0x04, offset 0x04
 } OSThreadQueue; // size 0x08
 
 // [SPQE7T]/ISpyD.elf:.debug_info::0x328b
 typedef struct OSThreadLink
 {
-	OSThread		*next;	// size 0x04, offset 0x00
-	OSThread		*prev;	// size 0x04, offset 0x00
+	OSThread	*next;	// size 0x04, offset 0x00
+	OSThread	*prev;	// size 0x04, offset 0x04
 } OSThreadLink; // size 0x08
 
 // [SPQE7T]/ISpyD.elf:.debug_info::0x32cf
 typedef struct OSMutexQueue
 {
-	OSMutex			*head;	// size 0x04, offset 0x00
-	OSMutex			*tail;	// size 0x04, offset 0x04
+	OSMutex	*head;	// size 0x04, offset 0x00
+	OSMutex	*tail;	// size 0x04, offset 0x04
 } OSMutexQueue; // size 0x08
 
 // [SPQE7T]/ISpyD.elf:.debug_info::0x2feb
@@ -416,12 +423,6 @@ enum SCSensorBarPos
 	SC_SENSOR_BAR_TOP
 } typedef SCSensorBarPos;
 
-typedef struct SCIdleMode
-{
-	u8	wc24;		// size 0x01, offset 0x00
-	u8	slotLight;	// size 0x01, offset 0x01
-} SCIdleMode; // size 0x02
-
 typedef struct SCBtDeviceInfo // basic dev info?
 {
 	BD_ADDR					devAddr;	// size 0x06, offset 0x00
@@ -430,7 +431,7 @@ typedef struct SCBtDeviceInfo // basic dev info?
 
 typedef struct SCBtDeviceInfoArray
 {
-	u8				num;			// size 0x001, offset 0x000 // name known from asserts
+	u8				num;			// size 0x001, offset 0x000	/* name known from asserts */
 
 	/* NOTE: contents of the devices member are actually
 	 *
@@ -455,7 +456,7 @@ typedef struct SCBtCmpDevInfo // complex dev info?
 
 typedef struct SCBtCmpDevInfoArray
 {
-	u8				num;			// size 0x001, offset 0x000 // name known from asserts
+	u8				num;			// size 0x001, offset 0x000 /* name known from asserts */
 	SCBtCmpDevInfo	devices[6];		// size 0x204, offset 0x001
 } SCBtCmpDevInfoArray; // size 0x205
 

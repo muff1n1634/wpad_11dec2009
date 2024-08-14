@@ -156,6 +156,7 @@
 // Reduced Classic Controller extension report
 #define MAKE_CL_REDUCED_STICK_LX(byte_)					((s16)((byte_) & 0x3f) << 4)
 #define MAKE_CL_REDUCED_STICK_LY(byte_)					((s16)((byte_) & 0x3f) << 4)
+// Hey Fellas Make Sure This Is A Signed Short
 #define MAKE_CL_REDUCED_STICK_RX(high_, mid_, low_)		((s16)((s16)((s16)((s16)((s16)(high_) >> 3) & 0x18) | (s16)((s16)((s16)(mid_) >> 5) & 0x06) | (s16)((s16)((s16)(low_) >> 7) & 0x01)) << 5))
 #define MAKE_CL_REDUCED_STICK_RY(byte_)					((s16)((byte_) & 0x1f) << 5)
 
@@ -1277,25 +1278,24 @@ static void __wpadGetGameInfo(WPADChannel chan, WPADResult result, u8 param_3)
 
 	int i;
 
-	byte_t *bufPtr1 = p_wpd->wmReadDataPtr;
-	byte_t *bufPtr2 = p_wpd->wmReadDataPtr;
+	byte_t *bufPtrRead = p_wpd->wmReadDataPtr;
+	byte_t *bufPtrCalc = p_wpd->wmReadDataPtr;
 	u8 crc = 0;
 
 	if (result == WPAD_ESUCCESS)
 	{
 		for (i = 0; i < 47; i++)
-			crc += bufPtr2[i];
+			crc += bufPtrCalc[i];
 
 		crc += 0x55;
-		if (bufPtr1[47] == crc)
+		if (bufPtrRead[47] == crc)
 		{
-			memcpy(&p_wpd->gameInfo, bufPtr2, sizeof p_wpd->gameInfo);
+			memcpy(&p_wpd->gameInfo, bufPtrCalc, sizeof p_wpd->gameInfo);
 			p_wpd->at_0x038[param_3] = 0; // WPAD_ESUCCESS?
 		}
 		else
 		{
-			// WPAD_EINVAL?
-			p_wpd->at_0x038[param_3] = -4;
+			p_wpd->at_0x038[param_3] = -4; // WPAD_EINVAL?
 		}
 	}
 	else

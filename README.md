@@ -41,4 +41,6 @@ By its nature, matching decompilation *has* a finish line, and this source is al
 - [ ] `lint.c`: `LINTMul` (64 bit math)
 - [ ] `WUD.c`: `__wudWritePatch` (inlining shenanigans)
 
+as well as some fakematches scattered around.
+
 PRs with functions not already in this repository are fine too, just make sure they match against this specific version of the library.

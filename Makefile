@@ -38,7 +38,8 @@ build/release/%.o: source/%.c
 ifeq ($(strip ${MWERKS}),)
 	$(error MWERKS not set)
 else
-	@[ -d build/release ] || mkdir -p build/release/
+	@mkdir build/
+	@mkdir build/release/
 	${WINE} ${MWERKS} ${flags_main} ${flags_opt_release} -o $@ -c $<
 endif
 
@@ -46,7 +47,8 @@ build/debug/%.o: source/%.c
 ifeq ($(strip ${MWERKS}),)
 	$(error MWERKS not set)
 else
-	@[ -d build/debug ] || mkdir -p build/debug/
+	@mkdir build/
+	@mkdir build/debug/
 	${WINE} ${MWERKS} ${flags_main} ${flags_opt_debug} -o $@ -c $<
 endif
 
@@ -57,7 +59,7 @@ lib/wpad.a: $(foreach f,$(basename ${wpad_src}),build/release/$f.o)
 ifeq ($(strip ${MWERKS}),)
 	$(error MWERKS not set)
 else
-	@[ -d lib/ ] || mkdir -p lib/
+	@mkdir lib/
 	${WINE} ${MWERKS} ${flags_main} ${flags_opt_release} -o $@ -library $^
 endif
 
@@ -65,6 +67,6 @@ lib/wpadD.a: $(foreach f,$(basename ${wpad_src}),build/debug/$f.o)
 ifeq ($(strip ${MWERKS}),)
 	$(error MWERKS not set)
 else
-	@[ -d lib/ ] || mkdir -p lib/
+	@mkdir lib/
 	${WINE} ${MWERKS} ${flags_main} ${flags_opt_debug} -o $@ -library $^
 endif

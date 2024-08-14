@@ -96,8 +96,7 @@ void WUDiHidHostEventCallback(tBTA_HH_EVT event, tBTA_HH *p_data)
 
 			p_wcb->connectedNum++;
 
-			OSAssert_Line(220, p_conn->handle >= 0
-			                   && p_conn->handle < WUD_MAX_DEV_ENTRY);
+			OSAssert_Line(220, p_conn->handle >= 0 && p_conn->handle < WUD_MAX_DEV_ENTRY);
 
 			p_info = WUDiGetDevInfo(p_conn->bda);
 			if (!p_info)
@@ -161,8 +160,7 @@ void WUDiHidHostEventCallback(tBTA_HH_EVT event, tBTA_HH *p_data)
 
 		p_wcb->connectedNum--;
 
-		OSAssert_Line(305, p_cb->handle >= 0
-		                   && p_cb->handle < WUD_MAX_DEV_ENTRY);
+		OSAssert_Line(305, p_cb->handle >= 0 && p_cb->handle < WUD_MAX_DEV_ENTRY);
 
 		p_info = WUDiGetDevInfo(WUDiGetDevAddrForHandle(p_cb->handle));
 		if (p_info)

@@ -62,7 +62,7 @@ static BOOL __wpadCalcAnalogNoise(wpad_cb_st *p_wpd, WPADNZFilter filter_type,
                                   BOOL analogChanged);
 static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
                                           void *rhs);
-static void __wpadCalcRecalibration(WPADChannel chan, WPADStatus *status);
+static void __wpadCalcRecalibration(WPADChannel chan, void *status);
 static void __wpadCalcControllerData(WPADChannel chan);
 static BOOL __wpadProcExtCommand(WPADChannel chan, BOOL previousSuccess);
 static void __wpadRumbleMotor(WPADChannel chan, BOOL procSuccess);
@@ -336,7 +336,7 @@ static BOOL OnShutdown(OSShutdownPass pass, OSShutdownEvent event)
 		return FALSE;
 	}
 
-	BOOL doCleanup;
+	BOOL isCleanup;
 	switch (event)
 	{
 	case OS_SHUTDOWN_EVENT_FATAL:
@@ -346,26 +346,26 @@ static BOOL OnShutdown(OSShutdownPass pass, OSShutdownEvent event)
 
 	case OS_SHUTDOWN_EVENT_SHUTDOWN:
 	case OS_SHUTDOWN_EVENT_3:
-		doCleanup = TRUE;
+		isCleanup = TRUE;
 		break;
 
 	case OS_SHUTDOWN_EVENT_1:
 	case OS_SHUTDOWN_EVENT_RESTART:
 	case OS_SHUTDOWN_EVENT_LAUNCH_APP:
-		doCleanup = FALSE;
+		isCleanup = FALSE;
 		break;
 
 	case OS_SHUTDOWN_EVENT_RETURN_TO_MENU:
-		doCleanup = __OSIsReturnToIdle ? 1 : 0;
+		isCleanup = __OSIsReturnToIdle ? 1 : 0;
 		break;
 
 	default:
-		// ERRATA: doCleanup is uninitialized here on release builds
+		// ERRATA: isCleanup is uninitialized here on release builds
 		OSAssertMessage_Line(1082, FALSE,
 		                     "WPAD: OnShutDown(): Unknown event %d\n", event);
 	}
 
-	if (doCleanup)
+	if (isCleanup)
 		__wpadCleanup();
 	else
 		__wpadReconnectStart(TRUE);
@@ -515,7 +515,7 @@ static void __wpadCalcRadioQuality(WPADChannel chan)
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
 	u32 two = 2; // some define?
 
-	if (!(_wpadSenseCnt == 10))
+	if (_wpadSenseCnt != 10)
 		return;
 
 	u16 a = p_wpd->radioSensitivity * 9;
@@ -544,19 +544,22 @@ static void __wpadCalcRadioQuality(WPADChannel chan)
 			}
 		}
 	}
-	else if (a < 75)
+	else
 	{
-		p_wpd->radioQuality = WPAD_RADIO_QUALITY_BAD;
-		p_wpd->radioQualityOkMs = 0;
-	}
-	else if (a < 80)
-	{
-		p_wpd->radioQualityOkMs++;
-
-		if (p_wpd->radioQualityOkMs >= 1)
+		if (a < 75)
 		{
 			p_wpd->radioQuality = WPAD_RADIO_QUALITY_BAD;
 			p_wpd->radioQualityOkMs = 0;
+		}
+		else if (a < 80)
+		{
+			p_wpd->radioQualityOkMs++;
+
+			if (p_wpd->radioQualityOkMs >= 1)
+			{
+				p_wpd->radioQuality = WPAD_RADIO_QUALITY_BAD;
+				p_wpd->radioQualityOkMs = 0;
+			}
 		}
 	}
 }
@@ -609,10 +612,10 @@ static u32 __wpadFmt2Size(WPADDataFormat fmt)
 		break;
 
 	default:
-		/* these are not explicit cases */
-		// case WPAD_FMT_BTN:
-		// case WPAD_FMT_BTN_ACC:
-		// case WPAD_FMT_BTN_ACC_DPD:
+	/* these are not explicit cases */
+	// case WPAD_FMT_BTN:
+	// case WPAD_FMT_BTN_ACC:
+	// case WPAD_FMT_BTN_ACC_DPD:
 		fmtSize = sizeof(WPADStatus);
 		break;
 	}
@@ -694,7 +697,7 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 				| __wpadIsAnalogChanged(lhsCore->obj[2].y, rhsCore->obj[2].y, 2)
 				| __wpadIsAnalogChanged(lhsCore->obj[3].x, rhsCore->obj[3].x, 2)
 				| __wpadIsAnalogChanged(lhsCore->obj[3].y, rhsCore->obj[3].y,
-		                                2));
+				                        2));
 	}
 
 	if (lhsCore->err == WPAD_ESUCCESS && rhsCore->err == WPAD_ESUCCESS)
@@ -719,7 +722,7 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 			isChanged |=
 				__wpadIsAnalogChanged(lhsFS->fsStickY, rhsFS->fsStickY, 1);
 		}
-		break;
+			break;
 
 		case WPAD_FMT_CLASSIC_BTN:
 		case WPAD_FMT_CLASSIC_BTN_ACC:
@@ -779,7 +782,7 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 				__wpadIsAnalogChanged(lhsCL->clTriggerR / triggerDiv,
 			                          rhsCL->clTriggerR / triggerDiv, 1);
 		}
-		break;
+			break;
 
 		case WPAD_FMT_TRAIN:
 		{
@@ -791,7 +794,7 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 			isChanged |= __wpadIsAnalogChanged(lhsTR->brake, rhsTR->brake, 1);
 			isChanged |= __wpadIsAnalogChanged(lhsTR->mascon, rhsTR->mascon, 1);
 		}
-		break;
+			break;
 
 		case WPAD_FMT_BALANCE_CHECKER:
 		{
@@ -808,7 +811,7 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 					| __wpadIsAnalogChanged(lhsBL->press[3], rhsBL->press[3],
 			                                50));
 		}
-		break;
+			break;
 
 		case WPAD_FMT_VSM:
 		{
@@ -817,7 +820,7 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 			if (p_wpd->unk_0xbbc)
 				isChanged |= lhsVS->at_0x42 > 200 ? 1 : 0;
 		}
-		break;
+			break;
 
 		case WPAD_FMT_MOTION_PLUS:
 		{
@@ -879,24 +882,24 @@ static BOOL __wpadIsControllerDataChanged(wpad_cb_st *p_wpd, void *lhs,
 				}
 			}
 		}
-		break;
+			break;
 		}
 	}
 
 	return isChanged;
 }
 
-static void __wpadCalcRecalibration(WPADChannel chan, WPADStatus *status)
+static void __wpadCalcRecalibration(WPADChannel chan, void *status)
 {
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
 
-	WPADCLStatus *clStatus = (WPADCLStatus *)status;
-	WPADMPStatus *mpStatus = (WPADMPStatus *)status;
+	WPADCLStatus *clStatus = status;
+	WPADMPStatus *mpStatus = status;
 
 	s8 recalibrateComboPressed = 0;
 	WPADExtButton clPressed = 0;
 
-	if (!((clStatus->err == WPAD_ESUCCESS || clStatus->err == WPAD_EBADE)))
+	if (clStatus->err != WPAD_ESUCCESS && clStatus->err != WPAD_EBADE)
 		return;
 
 	if (clStatus->button
@@ -949,13 +952,13 @@ static void __wpadCalcControllerData(WPADChannel chan)
 	BOOL intrStatus = OSDisableInterrupts();
 
 	u8 rxBufIndex = p_wpd->rxBufIndex != 0 ? 0 : 1;
-	WPADStatus *status = (WPADStatus *)(p_wpd->rxBufs[rxBufIndex]);
+	WPADStatus *status = (WPADStatus *)p_wpd->rxBufs[rxBufIndex];
 
 	OSRestoreInterrupts(intrStatus);
 
 	isChanged = __wpadIsControllerDataChanged(p_wpd, status, p_wpd->rxBufMain);
 
-	__wpadCalcRecalibration(chan, (WPADStatus *)status);
+	__wpadCalcRecalibration(chan, status);
 
 	if (isChanged)
 	{
@@ -1008,7 +1011,6 @@ static BOOL __wpadProcExtCommand(WPADChannel chan, BOOL previousSuccess)
 	_wpadExtCnt[chan] = 0;
 
 end:
-	// saturate at 5
 	_wpadExtCnt[chan] =
 		_wpadExtCnt[chan] == 5 ? _wpadExtCnt[chan] : _wpadExtCnt[chan] + 1;
 
@@ -1158,10 +1160,10 @@ static void __wpadManageHandler(OSAlarm *alarm __attribute__((unused)),
 
 		__wpadCertWork(chan);
 
-		if ((__rvl_p_wpadcb[chan]->devType == WPAD_DEV_MOTION_PLUS
+		if (__rvl_p_wpadcb[chan]->devType == WPAD_DEV_MOTION_PLUS
 		     || __rvl_p_wpadcb[chan]->devType == WPAD_DEV_MPLS_PT_FS
 		     || __rvl_p_wpadcb[chan]->devType == WPAD_DEV_MPLS_PT_CLASSIC
-		     || __rvl_p_wpadcb[chan]->devType == WPAD_DEV_MPLS_PT_UNKNOWN))
+		     || __rvl_p_wpadcb[chan]->devType == WPAD_DEV_MPLS_PT_UNKNOWN)
 		{
 			if (__rvl_p_wpadcb[chan]->mplsUptimeMs < 200)
 				__rvl_p_wpadcb[chan]->mplsUptimeMs++;
@@ -1260,9 +1262,9 @@ static void __wpadClearControlBlock(WPADChannel chan)
 
 	p_wpd->rxBufIndex = 0;
 	memset(p_wpd->rxBufs, 0, sizeof p_wpd->rxBufs);
-	status = (WPADStatus *)(p_wpd->rxBufs[0]);
+	status = (WPADStatus *)p_wpd->rxBufs[0];
 	status->err = WPAD_ERR_NO_CONTROLLER;
-	status = (WPADStatus *)(p_wpd->rxBufs[1]);
+	status = (WPADStatus *)p_wpd->rxBufs[1];
 	status->err = WPAD_ERR_NO_CONTROLLER;
 	memcpy(p_wpd->rxBufMain, p_wpd->rxBufs[0], sizeof p_wpd->rxBufMain);
 
@@ -1318,8 +1320,6 @@ static void __wpadClearControlBlock(WPADChannel chan)
 	_wpadDummyAttach[chan] = FALSE;
 #endif // !defined(NDEBUG)
 }
-
-#pragma push
 
 // TODO on release
 static void __wpadInitSub(void)
@@ -1378,8 +1378,6 @@ static void __wpadInitSub(void)
 	OSSetPeriodicAlarm(&_wpadManageAlarm, OSGetTime(), OSMillisecondsToTicks(1),
 	                   &__wpadManageHandler0);
 }
-
-#pragma pop
 
 void WPADInit(void)
 {
@@ -1527,7 +1525,7 @@ void WPADGetAddress(WPADChannel chan, BD_ADDR_PTR addr)
 }
 
 // WPADGetCalibratedDPDObject ([SGLEA4]/MAP/GormitiDebug.MAP:25309)
-extern void __deadstrip0(void)
+extern void __deadstrip1(void)
 {
 	(void)"Failed assertion src != NULL && dst != NULL";
 }
@@ -1590,8 +1588,7 @@ static void __wpadInitConnectionCallback(WPADChannel chan, WPADResult result)
 	u16 size = result == WPAD_ESUCCESS ? 20 : 42;
 	address =
 		result == WPAD_ESUCCESS ? WM_ADDR_MEM_176C : WM_ADDR_MEM_DEV_CONFIG_0;
-	u8 port =
-		p_wpd->devType == WPAD_DEV_BALANCE_CHECKER ? 1 : (1 << chan);
+	u8 port = p_wpd->devType == WPAD_DEV_BALANCE_CHECKER ? 1 : 1 << chan;
 
 	WPADiSendSetReportType(&p_wpd->stdCmdQueue, 0, p_wpd->disableContReport,
 	                       &__wpadAbortConnectionCallback);
@@ -1761,7 +1758,7 @@ static void __wpadReceiveCallback(UINT8 dev_handle, UINT8 *p_rpt,
 	if (port < (u32)WPAD_MAX_CONTROLLERS)
 		result = WPADiHIDParser(port, p_rpt);
 
-	(void)result; // NOTE: do not remove
+	(void)result; // cool
 }
 
 static WPADResult __wpadGetConnectionStatus(WPADChannel chan)
@@ -1812,7 +1809,7 @@ void WPADGetAccGravityUnit(WPADChannel chan, WPADAccGravityUnitType type,
 }
 
 // WPADGetCLTriggerThreshold ([SGLEA4]/MAP/GormitiDebug.MAP:25321)
-extern void __deadstrip1(void)
+extern void __deadstrip2(void)
 {
 	(void)"Failed assertion p_wpd->devType == WPAD_DEV_CLASSIC";
 	(void)"Failed assertion left != NULL && right != NULL";
@@ -1884,18 +1881,18 @@ WPADResult WPADProbe(WPADChannel chan, WPADDeviceType *devTypeOut)
 	if (devTypeOut)
 		*devTypeOut = p_wpd->devType;
 
-	WPADResult ret = p_wpd->status;
-	if (ret != WPAD_ENODEV)
+	WPADResult status = p_wpd->status;
+	if (status != WPAD_ENODEV)
 	{
 		if (p_wpd->devType == WPAD_DEV_NONE)
-			ret = WPAD_ENODEV;
+			status = WPAD_ENODEV;
 		else if (!p_wpd->handshakeFinished)
-			ret = WPAD_ECOMM;
+			status = WPAD_ECOMM;
 	}
 
 	OSRestoreInterrupts(intrStatus);
 
-	return ret;
+	return status;
 }
 
 WPADSamplingCallback *WPADSetSamplingCallback(WPADChannel chan,
@@ -2006,7 +2003,7 @@ WPADResult WPADSetDataFormat(WPADChannel chan, WPADDataFormat fmt)
 
 	BOOL handshakeFinished = p_wpd->handshakeFinished;
 	status = p_wpd->status;
-	WPADDataFormat curFormat = p_wpd->dataFormat;
+	WPADDataFormat currFormat = p_wpd->dataFormat;
 
 	OSRestoreInterrupts(intrStatus);
 
@@ -2016,7 +2013,7 @@ WPADResult WPADSetDataFormat(WPADChannel chan, WPADDataFormat fmt)
 	if (!handshakeFinished)
 		return WPAD_ECOMM;
 
-	if (curFormat == fmt)
+	if (currFormat == fmt)
 		return WPAD_ESUCCESS;
 
 	if (WPADiSendSetReportType(&p_wpd->stdCmdQueue, fmt,
@@ -2106,7 +2103,7 @@ end:
 }
 
 // WPADGetSyncType ([SGLEA4]/MAP/GormitiDebug.MAP:25337)
-extern void __deadstrip2(void)
+extern void __deadstrip3(void)
 {
 	(void)"Failed assertion type != NULL";
 }
@@ -2115,11 +2112,10 @@ void WPADControlMotor(WPADChannel chan, WPADMotorCommand command)
 {
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
 
-	int a __attribute__((unused)) = 0; // NOTE: do not remove
+	int a __attribute__((unused)) = 0; // What
 
 	OSAssert_Line(3723, ( 0 <= chan ) && ( chan < WPAD_MAX_CONTROLLERS ));
-	OSAssert_Line(3724, ( WPAD_MOTOR_STOP == command )
-                     || ( WPAD_MOTOR_RUMBLE == command ));
+	OSAssert_Line(3724, ( WPAD_MOTOR_STOP == command ) || ( WPAD_MOTOR_RUMBLE == command ));
 
 	BOOL intrStatus = OSDisableInterrupts();
 
@@ -2248,7 +2244,7 @@ void WPADRead(WPADChannel chan, WPADStatus *status)
 	BOOL intrStatus = OSDisableInterrupts();
 
 	u8 rxBufIndex = p_wpd->rxBufIndex != 0 ? 0 : 1;
-	WPADStatus *rxStatus = (WPADStatus *)(p_wpd->rxBufs[rxBufIndex]);
+	WPADStatus *rxStatus = (WPADStatus *)p_wpd->rxBufs[rxBufIndex];
 	u32 fmtSize = __wpadFmt2Size(p_wpd->dataFormat);
 
 	if (rxStatus->err != WPAD_ESUCCESS)
@@ -2295,9 +2291,9 @@ void WPADiExcludeButton(WPADChannel chan)
 	BOOL intrStatus = OSDisableInterrupts();
 
 	u8 rxBufIndex = p_wpd->rxBufIndex != 0 ? 0 : 1;
-	byte_t *rxBuf = p_wpd->rxBufs[rxBufIndex];
+	void *rxBuf = p_wpd->rxBufs[rxBufIndex];
 
-	WPADStatus *status = (WPADStatus *)(rxBuf);
+	WPADStatus *status = rxBuf;
 
 	if ((status->button & (WPAD_BUTTON_LEFT | WPAD_BUTTON_RIGHT))
 	     == (WPAD_BUTTON_LEFT | WPAD_BUTTON_RIGHT))
@@ -2319,7 +2315,7 @@ void WPADiExcludeButton(WPADChannel chan)
 	     || p_wpd->dataFormat == WPAD_FMT_DRUM
 	     || p_wpd->dataFormat == WPAD_FMT_TAIKO)
 	{
-		clStatus = (WPADCLStatus *)(rxBuf);
+		clStatus = rxBuf;
 
 		if ((clStatus->clButton
 		      & (WPAD_BUTTON_CL_LEFT | WPAD_BUTTON_CL_RIGHT))
@@ -2338,7 +2334,7 @@ void WPADiExcludeButton(WPADChannel chan)
 	WPADTRStatus *trStatus;
 	if (p_wpd->dataFormat == WPAD_FMT_TRAIN)
 	{
-		trStatus = (WPADTRStatus *)(rxBuf);
+		trStatus = rxBuf;
 
 		if ((trStatus->trButton
 		      & (WPAD_BUTTON_TR_LEFT | WPAD_BUTTON_TR_RIGHT))
@@ -2365,7 +2361,7 @@ void WPADiCopyOut(WPADChannel chan)
 
 	u32 fmtSize;
 	u8 rxBufIndex = p_wpd->rxBufIndex != 0 ? 0 : 1;
-	WPADStatus *status = (WPADStatus *)(p_wpd->rxBufs[rxBufIndex]);
+	WPADStatus *status = (WPADStatus *)p_wpd->rxBufs[rxBufIndex];
 	fmtSize = __wpadFmt2Size(p_wpd->dataFormat);
 
 	WPADStatus *statusOut;
@@ -2649,7 +2645,7 @@ WPADResult WPADSendStreamData(WPADChannel chan, void *p_buf, u16 len)
 }
 
 // WPADSetDpdSensitivity ([SGLEA4]/MAP/GormitiDebug.MAP:25355)
-extern void __deadstrip3(void)
+extern void __deadstrip4(void)
 {
 	(void)"Sensitivity must be from 1 to 5.\n";
 }
@@ -2689,27 +2685,31 @@ static void __wpadDpdCallback(WPADChannel chan,
 	p_wpd->dpdBusy = FALSE;
 	p_wpd->wpInfo.dpd = p_wpd->pendingDpdCommand == WPAD_DPD_DISABLE ? 0 : 1;
 
-	(void)result; // NOTE: do not remove
+	(void)result; // OfCourse
 }
 
 WPADResult WPADControlDpd(WPADChannel chan, WPADDpdCommand command,
                           WPADCallback *cb)
 {
-	static const byte_t cfg1[WPAD_MAX_DPD_SENS][9] = {
+	// clang-format off
+	static const byte_t cfg1[WPAD_MAX_DPD_SENS][9] =
+	{
 		{0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0x64, 0x00, 0xfe},
 		{0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0x96, 0x00, 0xb4},
 		{0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0xaa, 0x00, 0x64},
 		{0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0xc8, 0x00, 0x36},
 		{0x07, 0x00, 0x00, 0x71, 0x01, 0x00, 0x72, 0x00, 0x20}
-    };
+	};
 
-	static const byte_t cfg2[WPAD_MAX_DPD_SENS][2] = {
+	static const byte_t cfg2[WPAD_MAX_DPD_SENS][2] =
+	{
 		{0xfd, 0x05},
-        {0xb3, 0x04},
-        {0x63, 0x03},
-        {0x35, 0x03},
-        {0x1f, 0x03}
-    };
+		{0xb3, 0x04},
+		{0x63, 0x03},
+		{0x35, 0x03},
+		{0x1f, 0x03}
+	};
+	// clang-format on
 
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
 
@@ -2871,7 +2871,7 @@ WPADResult WPADControlBLC(WPADChannel chan, WPADBLCCommand command,
 
 			break;
 
-		case 0:
+		case WPAD_BLC_DISABLE:
 			status = WPADWriteExtReg(chan, data, 1, WPAD_EXT_REG_EXTENSION,
 			                         0xf1, cb);
 
@@ -2900,7 +2900,7 @@ end:
 
 // clang-format off
 // Various functions in between ([SGLEA4]/MAP/GormitiDebug.MAP:25366-25379)
-extern void __deadstrip4(void)
+extern void __deadstrip5(void)
 {
 	(void)"Failed assertion ( addr >= 0x20 && addr < 0x24 ) || ( addr >= 0xf1 && addr < 0xf6 )";
 	(void)"Failed assertion ( addr >= WPAD_BLCLB_BLK1_ADDR && addr + (len - 1) < WPAD_BLCLB_BLK3_ADDR + WPAD_BLCLB_BLK3_LEN ) || ( addr >= WPAD_BLCLB_BLK4_ADDR && addr + (len - 1) < WPAD_BLCLB_BLK5_ADDR + WPAD_BLCLB_BLK5_LEN )";
@@ -2930,7 +2930,7 @@ u8 WPADiGetMplsStatus(WPADChannel chan)
 }
 
 // WPADGetMplsStatus ([SGLEA4]/MAP/GormitiDebug.MAP:25381)
-extern void __deadstrip5(void)
+extern void __deadstrip6(void)
 {
 	(void)"WPADGetMplsStatus is obsolete.\n";
 }
@@ -3099,7 +3099,7 @@ static void __wpadMplsCallback(WPADChannel chan, WPADResult result)
 	case WPAD_STATE_MPLS_CB_DONE:
 		status = WPAD_ESUCCESS;
 
-		;
+		// fallthrough
 
 	case WPAD_STATE_MPLS_CB_RESET:
 		p_wpd->mplsCBState = WPAD_STATE_MPLS_CB_START;
@@ -3164,13 +3164,13 @@ WPADResult WPADiControlMpls(WPADChannel chan, WPADMplsCommand command,
 		|| devType == WPAD_DEV_MPLS_PT_UNKNOWN)
 			&& (command == WPAD_MPLS_DISABLE
 			|| command == WPAD_MPLS_CMD_80))
-		|| (((devType != WPAD_DEV_MOTION_PLUS
+		|| ((devType != WPAD_DEV_MOTION_PLUS
 		&& devType != WPAD_DEV_MPLS_PT_FS
 		&& devType != WPAD_DEV_MPLS_PT_CLASSIC
 		&& devType != WPAD_DEV_MPLS_PT_UNKNOWN)
 			&& (command == WPAD_MPLS_MAIN
 			|| command == WPAD_MPLS_FS
-			|| command == WPAD_MPLS_CLASSIC))))
+			|| command == WPAD_MPLS_CLASSIC)))
 	// clang-format on
 	{
 		if (command == WPAD_MPLS_CMD_80 && p_wpd->mplsUptimeMs < 200)
@@ -3220,7 +3220,7 @@ WPADResult WPADiControlMpls(WPADChannel chan, WPADMplsCommand command,
 		status = WPAD_EINVAL;
 	}
 
-end: // earlier this time
+end: // earlier this time. hm
 	OSRestoreInterrupts(intrStatus);
 
 	if (cb)
@@ -3230,7 +3230,7 @@ end: // earlier this time
 }
 
 // WPADControlMpls ([SGLEA4]/MAP/GormitiDebug.MAP:25384)
-extern void __deadstrip6(void)
+extern void __deadstrip7(void)
 {
 	(void)"WPADControlMpls is obsolete.\n";
 }
@@ -3254,13 +3254,13 @@ void WPADiGetMplsCalibration(WPADChannel chan, struct WPADMplsCalibration *high,
 }
 
 // WPADGetMplsCalibration ([SGLEA4]/MAP/GormitiDebug.MAP:25386)
-extern void __deadstrip7(void)
+extern void __deadstrip8(void)
 {
 	(void)"WPADGetMplsCalibration is obsolete.\n";
 }
 
 // WPADSetMplsCalibration ([SGLEA4]/MAP/GormitiDebug.MAP:25387)
-extern void __deadstrip8(void)
+extern void __deadstrip9(void)
 {
 	(void)"WPADSetMplsCalibration is obsolete.\n";
 }
@@ -3627,12 +3627,12 @@ static BOOL __wpadSetSensorBarPower(BOOL enabled)
 
 	register_t newStatus;
 	if (enabled)
-		newStatus = reg | (1 << (31 - (23)));
+		newStatus = reg | (1 << 8);
 	else
-		newStatus = reg & ~(1 << (31 - (23)));
+		newStatus = reg & ~(1 << 8);
 
 	ACRWriteReg(0xc0, newStatus);
-	BOOL oldStatus = reg & (1 << (31 - (23))) ? 1 : 0;
+	BOOL oldStatus = reg & (1 << 8) ? 1 : 0;
 
 	OSRestoreInterrupts(intrStatus);
 
@@ -3658,7 +3658,6 @@ static u8 __wpadGetDpdSensitivity(void)
 	return dpdSens;
 }
 
-// TODO: match without NDEBUG conditional
 static u8 __wpadGetSensorBarPosition(void)
 {
 	return SCGetWpadSensorBarPosition() == SC_SENSOR_BAR_TOP
@@ -3743,7 +3742,7 @@ BOOL WPADiIsDummyExtension(WPADChannel chan)
 {
 	return _wpadDummyAttach[chan];
 }
-#endif // !defined(NDEBUG)
+#endif
 
 BOOL WPADIsUsedCallbackByKPAD(void)
 {
@@ -3801,7 +3800,7 @@ static void __wpadCertCalcMulX(WPADChannel chan)
 	wpad_cb_st *p_wpd = __rvl_p_wpadcb[chan];
 
 	if (p_wpd->certChallengeRandomBit != 0)
-		LINTMul(p_wpd->certBufBig, p_wpd->certBuf0, (ULONG *)certv);
+		LINTMul(p_wpd->certBufBig, p_wpd->certBuf0, certv);
 	else
 		memcpy(p_wpd->certBufBig, p_wpd->certBuf0, sizeof p_wpd->certBuf0);
 
@@ -4059,8 +4058,7 @@ static u8 __wpadCertGetParam(WPADChannel chan, ULONG *certParamOut)
 		p_wpd->certParamPtr = certParamOut;
 		WPADiSendReadData(&p_wpd->extCmdQueue, p_wpd->wmReadDataBuf,
 		                  sizeof p_wpd->wmReadDataBuf,
-		                  (u32)WM_REG_EXTENSION_CERT_PARAM
-		                      + p_wpd->wmParamOffset,
+		                  WM_REG_EXTENSION_CERT_PARAM + p_wpd->wmParamOffset,
 		                  &__wpadCertGetParamCallback);
 
 		return FALSE;

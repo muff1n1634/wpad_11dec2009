@@ -1,8 +1,8 @@
 #ifndef __STDC_STRING_H__
 #define __STDC_STRING_H__
 
-#include <__size_t.h>
-#include <__NULL.h>
+#include <__internal/__size_t.h>
+#include <__internal/__NULL.h>
 
 extern void *memcpy(void * restrict s1, const void * restrict s2, size_t n);
 

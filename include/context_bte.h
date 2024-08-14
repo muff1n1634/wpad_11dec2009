@@ -224,7 +224,6 @@ typedef UINT32 tBTA_SERVICE_MASK;
 #define BTA_ID_MIP          41           /* Multicase Individual Polling */
 #define BTA_ID_RT           42           /* Audio Routing module: This module is always on. */
 
-
 /* JV */
 #define BTA_ID_JV1          43           /* JV1 */
 #define BTA_ID_JV2          44           /* JV2 */
@@ -540,7 +539,7 @@ typedef struct
                                     Otherwise, the number of ACL links */
 } tBTA_DM_BUSY_LEVEL;
 
-// muff1n: TODO: check that all members are here
+// muff1n: only filled with used members
 typedef union
 {
     tBTA_DM_ENABLE      enable;         /* BTA enabled */
@@ -568,6 +567,7 @@ typedef UINT8 tBTA_DM_SEARCH_EVT;
 
 #define BTA_DM_INQ_RES_IGNORE_RSSI      BTM_INQ_RES_IGNORE_RSSI /* 0x7f RSSI value not supplied (ignore it) */
 
+// muff1n: commented some fields out
 /* Structure associated with BTA_DM_INQ_RES_EVT */
 typedef struct
 {
@@ -695,7 +695,7 @@ typedef struct
     UINT8                       handle;     /* device handle            */
 } tBTA_HH_CBDATA;
 
-// muff1n: only filled with used members (there are more)
+// muff1n: only filled with used members
 typedef union
 {
     tBTA_HH_DEV_INFO        dev_info;           /* BTA_HH_ADD_DEV_EVT, BTA_HH_RMV_DEV_EVT   */
@@ -909,7 +909,6 @@ typedef struct
 } tBTM_DELETE_STORED_LINK_KEY_COMPLETE;
 
 // ---
-// muff1n: functions are below
 
 tBTA_STATUS BTA_EnableBluetooth(tBTA_DM_SEC_CBACK *p_cback);
 tBTA_STATUS BTA_DisableBluetooth(void);
@@ -943,42 +942,42 @@ void bta_sys_set_trace_level(UINT8 level);
 
 void BTM_DeviceReset (tBTM_CMPL_CB *p_cb);
 
-tBTM_STATUS BTM_ReadStoredLinkKey  (BD_ADDR bd_addr, tBTM_CMPL_CB *p_cb);
-tBTM_STATUS BTM_WriteStoredLinkKey (UINT8 num_keys,
-                                    BD_ADDR *bd_addr,
-                                    LINK_KEY *link_key,
-                                    tBTM_CMPL_CB *p_cb);
+tBTM_STATUS BTM_ReadStoredLinkKey(BD_ADDR bd_addr, tBTM_CMPL_CB *p_cb);
+tBTM_STATUS BTM_WriteStoredLinkKey(UINT8 num_keys,
+                                   BD_ADDR *bd_addr,
+                                   LINK_KEY *link_key,
+                                   tBTM_CMPL_CB *p_cb);
 tBTM_STATUS BTM_DeleteStoredLinkKey(BD_ADDR bd_addr, tBTM_CMPL_CB *p_cb);
 
-tBTM_STATUS BTM_SetPowerMode (UINT8 pm_id, BD_ADDR remote_bda, tBTM_PM_PWR_MD *p_mode);
-tBTM_STATUS BTM_SetAfhChannels (UINT8 first, UINT8 last);
+tBTM_STATUS BTM_SetPowerMode(UINT8 pm_id, BD_ADDR remote_bda, tBTM_PM_PWR_MD *p_mode);
+tBTM_STATUS BTM_SetAfhChannels(UINT8 first, UINT8 last);
 
 tBTM_STATUS BTM_VendorSpecificCommand(UINT16 opcode, UINT8 param_len,
                                       UINT8 *p_param_buf, tBTM_VSC_CMPL_CB *p_cb);
 
-tBTM_STATUS BTM_ReadLocalVersion (tBTM_VERSION_INFO *p_vers);
-tBTM_STATUS BTM_SetDeviceClass (DEV_CLASS dev_class);
+tBTM_STATUS BTM_ReadLocalVersion(tBTM_VERSION_INFO *p_vers);
+tBTM_STATUS BTM_SetDeviceClass(DEV_CLASS dev_class);
 
-tBTM_STATUS btm_remove_acl (BD_ADDR bd_addr);
+tBTM_STATUS btm_remove_acl(BD_ADDR bd_addr);
 
 // muff1n: is_register is probably the missing parameter here
-tBTM_STATUS BTM_RegisterForVSEvents (tBTM_VS_EVT_CB *p_cb);
-tBTM_DEV_STATUS_CB *BTM_RegisterForDeviceStatusNotif (tBTM_DEV_STATUS_CB *p_cb);
+tBTM_STATUS BTM_RegisterForVSEvents(tBTM_VS_EVT_CB *p_cb);
+tBTM_DEV_STATUS_CB *BTM_RegisterForDeviceStatusNotif(tBTM_DEV_STATUS_CB *p_cb);
 
-tBTM_STATUS BTM_PmRegister (UINT8 mask, UINT8 *p_pm_id, tBTM_PM_STATUS_CBACK *p_cb);
+tBTM_STATUS BTM_PmRegister(UINT8 mask, UINT8 *p_pm_id, tBTM_PM_STATUS_CBACK *p_cb);
 tBTM_STATUS BTM_WritePageTimeout(UINT16 timeout);
-void BTM_SetDefaultLinkPolicy (UINT16 settings);
-void BTM_SetDefaultLinkSuperTout (UINT16 timeout);
+void BTM_SetDefaultLinkPolicy(UINT16 settings);
+void BTM_SetDefaultLinkSuperTout(UINT16 timeout);
 
-BOOLEAN BTM_SecAddDevice (BD_ADDR bd_addr, DEV_CLASS dev_class, BD_NAME bd_name,
-                          BD_FEATURES features, UINT32 trusted_mask[],
-                          LINK_KEY link_key);
+BOOLEAN BTM_SecAddDevice(BD_ADDR bd_addr, DEV_CLASS dev_class, BD_NAME bd_name,
+                         BD_FEATURES features, UINT32 trusted_mask[],
+                         LINK_KEY link_key);
 
 void *GKI_getbuf(UINT16 size);
 
-UINT8 L2CA_SetTraceLevel (UINT8 trace_level);
+UINT8 L2CA_SetTraceLevel(UINT8 trace_level);
 
-UINT8 SDP_SetTraceLevel (UINT8 new_level);
+UINT8 SDP_SetTraceLevel(UINT8 new_level);
 
 /* muff1n: not in bluedroid source; might be older removed API functions */
 void BTA_DmSendHciReset(void);

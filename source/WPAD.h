@@ -112,7 +112,7 @@ enum WPADNZFilter_et
 	WPAD_NZFILTER_EXT,
 	WPAD_NZFILTER_MPLS,
 
-	WPAD_MAX_NZFILTERS // name known from asserts
+	WPAD_MAX_NZFILTERS	/* name known from asserts */
 };
 
 // WPADiControlMpls
@@ -182,12 +182,9 @@ enum WPADExtensionState_et
 	WPAD_STATE_EXT_INITIALIZED,
 	WPAD_STATE_EXT_ENCRYPTED,
 	WPAD_STATE_EXT_ENCRYPTED_3RD,
-
-#define WPAD_EXTENSION_DATA_IS_ENCRYPTED(extState_)	\
-	((extState_) == WPAD_STATE_EXT_ENCRYPTED || (extState_) == WPAD_STATE_EXT_ENCRYPTED_3RD)
 };
 
-// for __rvl_wpadcb.radioQuality
+// __rvl_wpadcb::radioQuality
 typedef u8 WPADRadioQuality;
 enum WPADRadioQuality_et
 {
@@ -210,6 +207,7 @@ struct WPADCmd
 {
 	u32				reportID;				// size 0x04, offset 0x00
 	byte_t			dataBuf[RPT_MAX_SIZE];	// size 0x15, offset 0x04
+	// 1 byte padding (alignment)
 	u16				dataLength;				// size 0x02, offset 0x1a
 	void			*dstBuf;				// size 0x04, offset 0x1c
 	u16				readLength;				// size 0x02, offset 0x20

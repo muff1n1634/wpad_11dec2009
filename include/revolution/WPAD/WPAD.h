@@ -5,7 +5,6 @@
  * headers
  */
 
-#include <macros.h>
 #include <types.h>
 
 #include "WUD.h"
@@ -186,24 +185,24 @@ enum WPADButton_et
 	/* NOTE: the bytes from the report are swapped when being placed into this
 	 * format (see MAKE_BUTTON in WPADHIDParser.c)
 	 */
-	WPAD_BUTTON_LEFT		= (1 <<  0),
-	WPAD_BUTTON_RIGHT		= (1 <<  1),
-	WPAD_BUTTON_DOWN		= (1 <<  2),
-	WPAD_BUTTON_UP			= (1 <<  3),
-	WPAD_BUTTON_PLUS		= (1 <<  4),
-	//						  (1 <<  5),
-	//						  (1 <<  6),
-	//						  (1 <<  7),
-	WPAD_BUTTON_2			= (1 <<  8),
-	WPAD_BUTTON_1			= (1 <<  9),
-	WPAD_BUTTON_B			= (1 << 10),
-	WPAD_BUTTON_A			= (1 << 11),
-	WPAD_BUTTON_MINUS		= (1 << 12),
-	//						  (1 << 13),	// WPAD_BUTTON_FS_Z
-	//						  (1 << 14),	// WPAD_BUTTON_FS_C
-	WPAD_BUTTON_HOME		= (1 << 15),
+	WPAD_BUTTON_LEFT	= (1 <<  0),
+	WPAD_BUTTON_RIGHT	= (1 <<  1),
+	WPAD_BUTTON_DOWN	= (1 <<  2),
+	WPAD_BUTTON_UP		= (1 <<  3),
+	WPAD_BUTTON_PLUS	= (1 <<  4),
+	//					  (1 <<  5),
+	//					  (1 <<  6),
+	//					  (1 <<  7),
+	WPAD_BUTTON_2		= (1 <<  8),
+	WPAD_BUTTON_1		= (1 <<  9),
+	WPAD_BUTTON_B		= (1 << 10),
+	WPAD_BUTTON_A		= (1 << 11),
+	WPAD_BUTTON_MINUS	= (1 << 12),
+	//					  (1 << 13),	// WPAD_BUTTON_FS_Z
+	//					  (1 << 14),	// WPAD_BUTTON_FS_C
+	WPAD_BUTTON_HOME	= (1 << 15),
 
-	WPAD_BUTTON_ALL			= 0x9f1f
+	WPAD_BUTTON_ALL		= 0x9f1f
 };
 
 // names from wiiuse/wpad.h
@@ -268,8 +267,8 @@ enum WPADExtButton_et
 typedef u32 WPADMotorCommand;
 enum WPADMotorCommand_et
 {
-	WPAD_MOTOR_STOP			= 0,	/* name known from asserts */
-	WPAD_MOTOR_RUMBLE		= 1,	/* name known from asserts */
+	WPAD_MOTOR_STOP		= 0,	/* name known from asserts */
+	WPAD_MOTOR_RUMBLE	= 1,	/* name known from asserts */
 };
 
 // WPADControlSpeaker
@@ -291,26 +290,26 @@ enum WPADSpeakerCommand_et
 typedef u32 WPADDpdCommand;
 enum WPADDpdCommand_et
 {
-	WPAD_DPD_DISABLE		= 0x00,
+	WPAD_DPD_DISABLE	= 0x00,
 
 	// the command here is actually the data format
-	WPAD_DPD_BASIC			= 0x01,
-	WPAD_DPD_STANDARD		= 0x03,
-	WPAD_DPD_EXTENDED		= 0x05,
+	WPAD_DPD_BASIC		= 0x01,
+	WPAD_DPD_STANDARD	= 0x03,
+	WPAD_DPD_EXTENDED	= 0x05,
 };
 
 // WPADControlBLC
 typedef u8 WPADBLCCommand;
 enum WPADBLCCommand_et
 {
-	WPAD_BLC_DISABLE		= 0x00,
-	WPAD_BLC_CMD_55			= 0x55,
+	WPAD_BLC_DISABLE	= 0x00,
+	WPAD_BLC_CMD_55		= 0x55,
 
 	/* NOTE: maybe? the code on this case in WPADControlBLC seems to follow what
 	 * WiiBrew describes as the initialization sequence after the generic one
 	 * (https://wiibrew.org/wiki/Wii_Balance_Board#Wii_Initialisation_Sequence).
 	 */
-	WPAD_BLC_ENABLE			= 0xaa,
+	WPAD_BLC_ENABLE		= 0xaa,
 };
 
 // WPADMPStatus::stat
@@ -330,8 +329,8 @@ enum WPADMPStatusFlags_et
 typedef u32 WPADAccGravityUnitType;
 enum WPADAccGravityUnitType_et
 {
-	WPAD_ACC_GRAVITY_UNIT_CORE	= 0,
-	WPAD_ACC_GRAVITY_UNIT_FS	= 1,
+	WPAD_ACC_GRAVITY_UNIT_CORE,
+	WPAD_ACC_GRAVITY_UNIT_FS,
 };
 
 typedef WUDAllocFunc WPADAllocFunc;

@@ -7,8 +7,6 @@
 #include <limits.h>
 #include <string.h> // memset
 
-#include <types.h>
-
 /*******************************************************************************
  * macros
  */
@@ -17,6 +15,12 @@
 #define ULLONG_BIT				(sizeof(ULLONG) * CHAR_BIT)
 
 #define ULLONG_ULONG_BIT_DIFF	(ULLONG_BIT - ULONG_BIT)
+
+/*******************************************************************************
+ * types
+ */
+
+typedef unsigned long long ULLONG;
 
 /*******************************************************************************
  * explanation
