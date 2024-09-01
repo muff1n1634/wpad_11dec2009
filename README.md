@@ -2,7 +2,9 @@
 
 This repository contains a (mostly) matching decompilation of the WPAD library in the Revolution SDK, timestamped `Dec 11 2009`.
 
-Matches are mainly against the functions present in the release and debug ELF binaries from [`[SPQE7T]`](https://wiki.dolphin-emu.org/index.php?title=SPQE7T) *I Spy: Spooky Mansion*, but some are against functions present in the release and debug ELF binaries from [`[SGLEA4]`](https://wiki.dolphin-emu.org/index.php?title=SGLEA4) *Gormiti: The Lords of Nature!*, as well as DWARF info from both, and some symbol names from the maps in *Gormiti* as well. These binaries do not contain every function in the library (the *Gormiti* maps show exactly what is missing), so only the functions that were present in the binaries are matched here. Your game may have some of the extra functions that are not in this repository; you will have to do those yourself, but hopefully the surrounding source can help you with that.
+Matches are mainly against the functions present in the release and debug ELF binaries from [`[SPQE7T]`](https://wiki.dolphin-emu.org/index.php?title=SPQE7T) *I Spy: Spooky Mansion*, but some are against functions present in the release and debug ELF binaries from [`[SGLEA4]`](https://wiki.dolphin-emu.org/index.php?title=SGLEA4) *Gormiti: The Lords of Nature!*. All symbol names come from the *Gormiti* maps. Struct definitions and other names come directly from DWARF info from both games, as well as other sources listed where referenced.
+
+These binaries do not contain every function in the library (the *Gormiti* maps show exactly what is missing), so only the functions that were present in the binaries are matched here. Your decomp may have some of the extra functions that are not in this repository; you will have to do those yourself, but hopefully the surrounding source can help you with that.
 
 ## Building
 
