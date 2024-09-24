@@ -903,8 +903,9 @@ static WUDSyncState __wudSyncRegisterDevice(void)
 		break;
 	}
 
-	/* ERRATA: nextState is undefined when 0 <= _wudDiscWork.at_0x5b <= 5
-	 * does not hold
+	/* nextState is uninitialized when 0 <= _wudDiscWork.at_0x5b <= 5 does not
+	 * hold; however, I'm not sure where this is validated before coming in, if
+	 * anywhere
 	 */
 	return nextState;
 }

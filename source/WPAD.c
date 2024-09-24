@@ -360,9 +360,9 @@ static BOOL OnShutdown(OSShutdownPass pass, OSShutdownEvent event)
 		break;
 
 	default:
-		// ERRATA: isCleanup is uninitialized here on release builds
 		OSAssertMessage_Line(1082, FALSE,
 		                     "WPAD: OnShutDown(): Unknown event %d\n", event);
+		// implicit UB as if by placing __builtin_unreachable() here on release
 	}
 
 	if (isCleanup)
@@ -1707,9 +1707,7 @@ static void __wpadConnectionCallback(WUDDevInfo *devInfo, u8 success)
 		if (chan == WUD_DEV_HANDLE_INVALID)
 			return;
 
-		/* ERRATA: sanctioned OOB access of __rvl_p_wpadcb if
-		 * chan == WPAD_MAX_CONTROLLERS
-		 */
+		// ERRATA: OOB access of __rvl_p_wpadcb if chan == WPAD_MAX_CONTROLLERS
 		OSAssert_Line(2991, chan <= WPAD_MAX_CONTROLLERS);
 
 		p_wpd = __rvl_p_wpadcb[chan];
