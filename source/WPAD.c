@@ -1707,7 +1707,7 @@ static void __wpadConnectionCallback(WUDDevInfo *devInfo, u8 success)
 		if (chan == WUD_DEV_HANDLE_INVALID)
 			return;
 
-		// ERRATA: OOB access of __rvl_p_wpadcb if chan == WPAD_MAX_CONTROLLERS
+		// ERRATUM: OOB access of __rvl_p_wpadcb if chan == WPAD_MAX_CONTROLLERS
 		OSAssert_Line(2991, chan <= WPAD_MAX_CONTROLLERS);
 
 		p_wpd = __rvl_p_wpadcb[chan];

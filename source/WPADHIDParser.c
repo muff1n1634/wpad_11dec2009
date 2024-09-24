@@ -1510,7 +1510,7 @@ static void __a1_20_status_report(u8 chan, byte_t *hidReport, void *rxBuffer)
 	p_wpd->wpInfo.lowBat = hidReport[RPT20_FLAGS] & 0x01;
 	p_wpd->wpInfo.led = (hidReport[RPT20_FLAGS] & 0xf0) >> 4;
 
-	/* ERRATA? the masks (or shifts?) on the following statements are switched
+	/* ERRATUM? the masks (or shifts?) on the following statements are switched
 	 *
 	 * protocol is always 0 after the shift (probably wrong)
 	 * firmware holds protocol(?) in its upper nibble (probably not intended)
